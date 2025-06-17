@@ -22,13 +22,35 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (Object.values(formData).every(value => value.trim() !== '')) {
-      onSubmit(formData);
+    
+    console.log('Form submitted with data:', formData);
+    
+    // Check if all required fields are filled
+    const requiredFields = ['fullName', 'birthDate', 'birthTime', 'birthCity', 'birthCountry'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof BirthData]?.trim());
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      alert(`Lütfen şu alanları doldurun: ${missingFields.join(', ')}`);
+      return;
     }
+    
+    // Validate date format
+    const date = new Date(formData.birthDate);
+    if (isNaN(date.getTime())) {
+      console.error('Invalid birth date:', formData.birthDate);
+      alert('Geçerli bir doğum tarihi girin');
+      return;
+    }
+    
+    console.log('Form validation passed, calling onSubmit');
+    onSubmit(formData);
   };
 
   const handleChange = (field: keyof BirthData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
+    const value = e.target.value;
+    console.log(`Field ${field} changed to:`, value);
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (

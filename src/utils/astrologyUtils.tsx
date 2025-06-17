@@ -1,4 +1,3 @@
-
 import type { BirthData } from '../pages/Index';
 
 interface ZodiacSign {
@@ -25,8 +24,18 @@ const zodiacSigns: ZodiacSign[] = [
 ];
 
 const getZodiacSign = (date: Date): ZodiacSign => {
+  console.log('getZodiacSign called with date:', date);
+  
+  // Check if date is valid
+  if (!date || isNaN(date.getTime())) {
+    console.error('Invalid date provided to getZodiacSign:', date);
+    return zodiacSigns[0]; // Return Aries as fallback
+  }
+  
   const month = date.getMonth() + 1;
   const day = date.getDate();
+  
+  console.log(`Checking date: month=${month}, day=${day}`);
   
   for (const sign of zodiacSigns) {
     const [startMonth, startDay] = sign.startDate;
@@ -39,6 +48,7 @@ const getZodiacSign = (date: Date): ZodiacSign => {
         (month === endMonth && day <= endDay) ||
         (month > startMonth && month < endMonth)
       ) {
+        console.log(`Found zodiac sign: ${sign.name}`);
         return sign;
       }
     } else {
@@ -47,6 +57,7 @@ const getZodiacSign = (date: Date): ZodiacSign => {
         (month === startMonth && day >= startDay) ||
         (month === endMonth && day <= endDay)
       ) {
+        console.log(`Found zodiac sign (year boundary): ${sign.name}`);
         return sign;
       }
     }
@@ -137,57 +148,49 @@ const getCosmicMessage = (sunSign: ZodiacSign): string => {
 };
 
 export const generateAstrologyReading = (birthData: BirthData) => {
-  console.log('Generating astrology reading for:', birthData);
+  console.log('=== generateAstrologyReading started ===');
+  console.log('Birth data received:', birthData);
   
+  // Validate birth data
+  if (!birthData) {
+    console.error('No birth data provided');
+    throw new Error('Birth data is required');
+  }
+  
+  if (!birthData.birthDate) {
+    console.error('No birth date provided');
+    throw new Error('Birth date is required');
+  }
+  
+  console.log('Creating date from birthDate:', birthData.birthDate);
   const birthDate = new Date(birthData.birthDate);
-  console.log('Birth date:', birthDate);
+  console.log('Birth date created:', birthDate);
+  console.log('Birth date is valid:', !isNaN(birthDate.getTime()));
+  
+  if (isNaN(birthDate.getTime())) {
+    console.error('Invalid birth date:', birthData.birthDate);
+    throw new Error('Invalid birth date format');
+  }
   
   const sunSign = getZodiacSign(birthDate);
-  console.log('Sun sign found:', sunSign);
+  console.log('Sun sign determined:', sunSign);
   
   // Ensure we have a valid sun sign
   if (!sunSign || !sunSign.name) {
     console.error('Invalid sun sign returned:', sunSign);
-    // Return a safe fallback
-    const fallbackSign = zodiacSigns[0]; // Aries
-    return {
-      title: `✨ ${birthData.fullName.split(' ')[0]} için bugünün astrolojik analizi`,
-      signs: [
-        {
-          type: "☀️ Güneş Burcu",
-          name: fallbackSign.name,
-          emoji: "☀️",
-          description: `${fallbackSign.element} elementi, ${fallbackSign.quality} kalite`
-        },
-        {
-          type: "🌙 Ay Burcu", 
-          name: fallbackSign.name,
-          emoji: "🌙",
-          description: `Duygusal doğan, içsel dünya`
-        },
-        {
-          type: "⬆️ Yükselen Burcu",
-          name: fallbackSign.name, 
-          emoji: "⬆️",
-          description: `Dış görünüş, ilk izlenim`
-        }
-      ],
-      analysis: `${birthData.fullName.split(' ')[0]}, bugün yıldızlar senin için özel bir enerji hazırlamış!`,
-      cosmicMessage: "Yıldızlar sana her zaman rehberlik eder, sadece dinlemeyi bil."
-    };
+    throw new Error('Could not determine zodiac sign');
   }
   
   // For simplicity, we'll use simplified calculations for Moon and Rising signs
-  // In a real app, you'd use more complex astronomical calculations
   const moonSigns = zodiacSigns;
   const risingSigns = zodiacSigns;
   
   // Simple hash-based selection for demo purposes
-  const nameHash = birthData.fullName.length + new Date(birthData.birthTime).getHours();
+  const nameHash = birthData.fullName.length + new Date(birthData.birthTime || '12:00').getHours();
   const moonSign = moonSigns[nameHash % moonSigns.length];
   const risingSign = risingSigns[(nameHash + 3) % risingSigns.length];
 
-  return {
+  const result = {
     title: `✨ ${birthData.fullName.split(' ')[0]} için bugünün astrolojik analizi`,
     signs: [
       {
@@ -212,4 +215,9 @@ export const generateAstrologyReading = (birthData: BirthData) => {
     analysis: generatePersonalizedReading(birthData, sunSign),
     cosmicMessage: getCosmicMessage(sunSign)
   };
+  
+  console.log('=== generateAstrologyReading completed ===');
+  console.log('Result:', result);
+  
+  return result;
 };
