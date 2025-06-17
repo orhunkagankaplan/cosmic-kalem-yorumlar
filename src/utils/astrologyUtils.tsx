@@ -32,16 +32,29 @@ const getZodiacSign = (date: Date): ZodiacSign => {
     const [startMonth, startDay] = sign.startDate;
     const [endMonth, endDay] = sign.endDate;
     
-    if (
-      (month === startMonth && day >= startDay) ||
-      (month === endMonth && day <= endDay) ||
-      (startMonth > endMonth && (month === startMonth || month === endMonth))
-    ) {
-      return sign;
+    // Handle signs that don't cross year boundary
+    if (startMonth <= endMonth) {
+      if (
+        (month === startMonth && day >= startDay) ||
+        (month === endMonth && day <= endDay) ||
+        (month > startMonth && month < endMonth)
+      ) {
+        return sign;
+      }
+    } else {
+      // Handle signs that cross year boundary (like Capricorn: Dec 22 - Jan 19)
+      if (
+        (month === startMonth && day >= startDay) ||
+        (month === endMonth && day <= endDay)
+      ) {
+        return sign;
+      }
     }
   }
   
-  return zodiacSigns[0]; // Fallback to Aries
+  // Fallback to Aries if no sign found (should never happen with correct logic)
+  console.log(`No zodiac sign found for date: ${month}/${day}, defaulting to Aries`);
+  return zodiacSigns[0];
 };
 
 const generatePersonalizedReading = (birthData: BirthData, sunSign: ZodiacSign): string => {
@@ -124,8 +137,45 @@ const getCosmicMessage = (sunSign: ZodiacSign): string => {
 };
 
 export const generateAstrologyReading = (birthData: BirthData) => {
+  console.log('Generating astrology reading for:', birthData);
+  
   const birthDate = new Date(birthData.birthDate);
+  console.log('Birth date:', birthDate);
+  
   const sunSign = getZodiacSign(birthDate);
+  console.log('Sun sign found:', sunSign);
+  
+  // Ensure we have a valid sun sign
+  if (!sunSign || !sunSign.name) {
+    console.error('Invalid sun sign returned:', sunSign);
+    // Return a safe fallback
+    const fallbackSign = zodiacSigns[0]; // Aries
+    return {
+      title: `✨ ${birthData.fullName.split(' ')[0]} için bugünün astrolojik analizi`,
+      signs: [
+        {
+          type: "☀️ Güneş Burcu",
+          name: fallbackSign.name,
+          emoji: "☀️",
+          description: `${fallbackSign.element} elementi, ${fallbackSign.quality} kalite`
+        },
+        {
+          type: "🌙 Ay Burcu", 
+          name: fallbackSign.name,
+          emoji: "🌙",
+          description: `Duygusal doğan, içsel dünya`
+        },
+        {
+          type: "⬆️ Yükselen Burcu",
+          name: fallbackSign.name, 
+          emoji: "⬆️",
+          description: `Dış görünüş, ilk izlenim`
+        }
+      ],
+      analysis: `${birthData.fullName.split(' ')[0]}, bugün yıldızlar senin için özel bir enerji hazırlamış!`,
+      cosmicMessage: "Yıldızlar sana her zaman rehberlik eder, sadece dinlemeyi bil."
+    };
+  }
   
   // For simplicity, we'll use simplified calculations for Moon and Rising signs
   // In a real app, you'd use more complex astronomical calculations
