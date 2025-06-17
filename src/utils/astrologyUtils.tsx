@@ -1,3 +1,4 @@
+
 import type { BirthData } from '../pages/Index';
 
 interface ZodiacSign {
@@ -69,11 +70,18 @@ const getZodiacSign = (date: Date): ZodiacSign => {
 };
 
 const generatePersonalizedReading = (birthData: BirthData, sunSign: ZodiacSign): string => {
+  console.log('generatePersonalizedReading called with sunSign:', sunSign);
+  
+  if (!sunSign || !sunSign.name) {
+    console.error('Invalid sunSign provided to generatePersonalizedReading:', sunSign);
+    return "Bugün yıldızlar senin için özel bir enerji hazırlamış! İçsel gücünü keşfetme zamanı.";
+  }
+  
   const firstName = birthData.fullName.split(' ')[0];
   const today = new Date();
   const dayOfWeek = today.toLocaleDateString('tr-TR', { weekday: 'long' });
   
-  const readings = {
+  const readings: Record<string, string> = {
     "Koç": `${firstName}, bugün ateşli enerjin doruk noktasında! ${dayOfWeek} günü senin için yeni başlangıçların habercisi. İçindeki cesur savaşçı, hayallerini gerçeğe dönüştürme zamanının geldiğini fısıldıyor. Bugün aldığın kararlar, gelecek ayların seyrini değiştirebilir.
 
 Mars'ın etkisiyle kararlılığın had safhada. Ama sabırlı ol sevgili Koç, acele etme dürtün seni yanıltmasın. Özellikle öğleden sonra saatlerinde, sezgilerin seni doğru yöne yönlendirecek. Aşk hayatında beklenmedik bir gelişme kapıda.`,
@@ -123,12 +131,26 @@ Arkadaşlıkların bugün odak noktanda. Sosyal çevren genişleyebilir, benzer 
 Rüyaların ve semboller önemli mesajlar taşıyor, onları not almayı unutma. Şifa verici enerjin çevrendekileri etkileyecek. Su kenarında geçireceğin zaman, içsel huzurunu artıracak.`
   };
 
-  return readings[sunSign.name as keyof typeof readings] || 
-    `${firstName}, bugün yıldızlar senin için özel bir enerji hazırlamış! ${dayOfWeek} günü, içsel gücünü keşfetme zamanı.`;
+  console.log('Available readings keys:', Object.keys(readings));
+  console.log('Looking for key:', sunSign.name);
+  
+  const reading = readings[sunSign.name];
+  
+  if (!reading) {
+    console.error(`No reading found for sign: ${sunSign.name}`);
+    return `${firstName}, bugün yıldızlar senin için özel bir enerji hazırlamış! ${dayOfWeek} günü, içsel gücünü keşfetme zamanı.`;
+  }
+  
+  return reading;
 };
 
 const getCosmicMessage = (sunSign: ZodiacSign): string => {
-  const messages = {
+  if (!sunSign || !sunSign.name) {
+    console.error('Invalid sunSign provided to getCosmicMessage:', sunSign);
+    return "Yıldızlar sana her zaman rehberlik eder, sadece dinlemeyi bil.";
+  }
+  
+  const messages: Record<string, string> = {
     "Koç": "Cesaretin seni her zaman hedefe götürür, ama sabır seni zafere ulaştırır.",
     "Boğa": "Güzellik gözlerindedir, ama gerçek zenginlik kalbindeki huzurdur.",
     "İkizler": "Kelimeler köprüdür; onları bilgelikle inşa et.",
@@ -143,8 +165,14 @@ const getCosmicMessage = (sunSign: ZodiacSign): string => {
     "Balık": "Okyanusun derinliği sonsuzluğu içinde barındırır, sen de öyle."
   };
 
-  return messages[sunSign.name as keyof typeof messages] || 
-    "Yıldızlar sana her zaman rehberlik eder, sadece dinlemeyi bil.";
+  const message = messages[sunSign.name];
+  
+  if (!message) {
+    console.error(`No cosmic message found for sign: ${sunSign.name}`);
+    return "Yıldızlar sana her zaman rehberlik eder, sadece dinlemeyi bil.";
+  }
+  
+  return message;
 };
 
 export const generateAstrologyReading = (birthData: BirthData) => {
