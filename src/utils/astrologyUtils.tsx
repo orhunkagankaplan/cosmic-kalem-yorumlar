@@ -212,8 +212,21 @@ export const generateAstrologyReading = (birthData: BirthData) => {
   
   // For simplicity, we'll use simplified calculations for Moon and Rising signs
   // Simple hash-based selection for demo purposes
-  const nameHash = birthData.fullName.length + new Date(birthData.birthTime || '12:00').getHours();
+  // Fix the birth time parsing
+  let birthHour = 12; // Default to noon
+  if (birthData.birthTime) {
+    const timeParts = birthData.birthTime.split(':');
+    if (timeParts.length >= 1) {
+      const hourPart = parseInt(timeParts[0], 10);
+      if (!isNaN(hourPart)) {
+        birthHour = hourPart;
+      }
+    }
+  }
+  
+  const nameHash = birthData.fullName.length + birthHour;
   console.log('Name hash calculated:', nameHash);
+  console.log('Birth hour used:', birthHour);
   
   const moonIndex = nameHash % zodiacSigns.length;
   const risingIndex = (nameHash + 3) % zodiacSigns.length;
@@ -268,4 +281,3 @@ export const generateAstrologyReading = (birthData: BirthData) => {
   
   return result;
 };
-
