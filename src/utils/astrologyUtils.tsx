@@ -1,4 +1,5 @@
 
+
 import type { BirthData } from '../pages/Index';
 
 interface ZodiacSign {
@@ -210,13 +211,31 @@ export const generateAstrologyReading = (birthData: BirthData) => {
   }
   
   // For simplicity, we'll use simplified calculations for Moon and Rising signs
-  const moonSigns = zodiacSigns;
-  const risingSigns = zodiacSigns;
-  
   // Simple hash-based selection for demo purposes
   const nameHash = birthData.fullName.length + new Date(birthData.birthTime || '12:00').getHours();
-  const moonSign = moonSigns[nameHash % moonSigns.length];
-  const risingSign = risingSigns[(nameHash + 3) % risingSigns.length];
+  console.log('Name hash calculated:', nameHash);
+  
+  const moonIndex = nameHash % zodiacSigns.length;
+  const risingIndex = (nameHash + 3) % zodiacSigns.length;
+  
+  console.log('Moon index:', moonIndex, 'Rising index:', risingIndex);
+  
+  const moonSign = zodiacSigns[moonIndex];
+  const risingSign = zodiacSigns[risingIndex];
+  
+  console.log('Moon sign:', moonSign);
+  console.log('Rising sign:', risingSign);
+  
+  // Additional safety checks
+  if (!moonSign || !moonSign.name) {
+    console.error('Invalid moon sign:', moonSign);
+    throw new Error('Could not determine moon sign');
+  }
+  
+  if (!risingSign || !risingSign.name) {
+    console.error('Invalid rising sign:', risingSign);
+    throw new Error('Could not determine rising sign');
+  }
 
   const result = {
     title: `✨ ${birthData.fullName.split(' ')[0]} için bugünün astrolojik analizi`,
@@ -249,3 +268,4 @@ export const generateAstrologyReading = (birthData: BirthData) => {
   
   return result;
 };
+
