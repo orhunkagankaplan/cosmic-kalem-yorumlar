@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import BirthDataForm from '../components/BirthDataForm';
-import AstrologyReading from '../components/AstrologyReading';
+import AIAstrologyReading from '../components/AIAstrologyReading';
 
 export interface BirthData {
   fullName: string;
@@ -69,18 +69,18 @@ const Index = () => {
                 AstroMind
               </h1>
               <div className="text-2xl text-purple-200 mb-6">
-                ✨ Kişisel Astroloji Rehberin ✨
+                ✨ AI Destekli Kişisel Astroloji Rehberin ✨
               </div>
               <p className="text-gray-300 text-lg mb-8 leading-relaxed">
-                Doğum verilerinle evrenin sana bugün için hazırladığı özel mesajı keşfet. 
-                Yıldızların dilinde yazılmış kaderini çöz.
+                Yapay zeka ile güçlendirilmiş astroloji analizin! Doğum verilerinle AI astrologumuzun 
+                sana bugün için hazırladığı özel mesajı keşfet.
               </p>
             </motion.div>
 
             <BirthDataForm onSubmit={handleFormSubmit} />
           </motion.div>
         ) : (
-          <AstrologyReading birthData={birthData!} onReset={handleReset} />
+          <AIAstrologyReading birthData={birthData!} onReset={handleReset} />
         )}
       </div>
     </div>
