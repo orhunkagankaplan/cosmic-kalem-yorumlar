@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import BirthDataForm from '../components/BirthDataForm';
@@ -16,12 +15,19 @@ const Index = () => {
   const [birthData, setBirthData] = useState<BirthData | null>(null);
   const [showReading, setShowReading] = useState(false);
 
-  const handleFormSubmit = (data: BirthData) => {
-    setBirthData(data);
-    setShowReading(true);
+  const handleFormSubmit = async (data: BirthData) => {
+    console.log('Received form data in Index:', data);
+    
+    try {
+      setBirthData(data);
+      setShowReading(true);
+    } catch (error) {
+      console.error('Error in handleFormSubmit:', error);
+    }
   };
 
   const handleReset = () => {
+    console.log('Resetting form');
     setBirthData(null);
     setShowReading(false);
   };
@@ -59,6 +65,7 @@ const Index = () => {
             transition={{ duration: 0.8 }}
             className="max-w-2xl mx-auto text-center"
           >
+            {/* title and description */}
             <motion.div
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}

@@ -20,8 +20,13 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
     birthCountry: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    if (isSubmitting) return;
     
     console.log('Form submitted with data:', formData);
     
@@ -43,14 +48,26 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
       return;
     }
     
-    console.log('Form validation passed, calling onSubmit');
-    onSubmit(formData);
+    try {
+      setIsSubmitting(true);
+      console.log('Form validation passed, calling onSubmit');
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Bir hata oluştu, lütfen tekrar deneyin');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: keyof BirthData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     console.log(`Field ${field} changed to:`, value);
-    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      [field]: value 
+    }));
   };
 
   return (
@@ -82,6 +99,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                 placeholder="Adın ve soyadın"
                 className="bg-slate-700/50 border-purple-400/30 text-white placeholder-gray-400 focus:border-purple-400"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -97,6 +115,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                   onChange={handleChange('birthDate')}
                   className="bg-slate-700/50 border-purple-400/30 text-white focus:border-purple-400"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -111,6 +130,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                   onChange={handleChange('birthTime')}
                   className="bg-slate-700/50 border-purple-400/30 text-white focus:border-purple-400"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -127,6 +147,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                   placeholder="İstanbul"
                   className="bg-slate-700/50 border-purple-400/30 text-white placeholder-gray-400 focus:border-purple-400"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -141,19 +162,21 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                   placeholder="Türkiye"
                   className="bg-slate-700/50 border-purple-400/30 text-white placeholder-gray-400 focus:border-purple-400"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
 
             <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+              whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
             >
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 text-lg shadow-lg"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                🔮 Astrolojik Analizi Başlat
+                {isSubmitting ? '🔮 Analiz Ediliyor...' : '🔮 Astrolojik Analizi Başlat'}
               </Button>
             </motion.div>
           </form>
