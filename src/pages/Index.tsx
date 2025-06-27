@@ -34,7 +34,7 @@ const Index = () => {
   };
 
   const handlePremiumClick = () => {
-    window.location.href = '/premium-yorum';
+    window.location.href = '/premium';
   };
 
   return (
