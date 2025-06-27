@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,7 @@ const Index = () => {
   };
 
   const handlePremiumClick = () => {
-    window.open('https://google.com', '_blank');
+    window.location.href = '/premium-yorum';
   };
 
   return (
