@@ -1,5 +1,7 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 import BirthDataForm from '../components/BirthDataForm';
 import AIAstrologyReading from '../components/AIAstrologyReading';
 
@@ -30,6 +32,10 @@ const Index = () => {
     console.log('Resetting form');
     setBirthData(null);
     setShowReading(false);
+  };
+
+  const handlePremiumClick = () => {
+    window.open('https://google.com', '_blank');
   };
 
   return (
@@ -85,6 +91,34 @@ const Index = () => {
             </motion.div>
 
             <BirthDataForm onSubmit={handleFormSubmit} />
+
+            {/* Premium content section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="mt-12 p-6 bg-gradient-to-r from-purple-800/30 to-blue-800/30 backdrop-blur-sm rounded-lg border border-purple-500/30"
+            >
+              <div className="text-center space-y-4">
+                <div className="text-purple-200 text-lg leading-relaxed">
+                  🔓 Bu yorum kişisel Güneş burcuna göre hazırlandı.<br />
+                  💫 Ay burcun, yükselenin ve haftalık astro rehberin seni bekliyor!<br />
+                  ✨ Daha fazla içgörü için Premium Astro Rehber'i deneyebilirsin.
+                </div>
+                
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={handlePremiumClick}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-lg transition-all duration-300"
+                  >
+                    ⭐ Premium Yorum Al
+                  </Button>
+                </motion.div>
+              </div>
+            </motion.div>
           </motion.div>
         ) : (
           <AIAstrologyReading birthData={birthData!} onReset={handleReset} />
