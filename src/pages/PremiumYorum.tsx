@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,10 @@ const PremiumYorum = () => {
     setIsLoading(true);
     
     try {
+      // First get NASA's Astronomy Picture of the Day
+      const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+      const nasaData = await nasaResponse.json();
+      
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -33,21 +36,25 @@ const PremiumYorum = () => {
           model: 'gpt-4o',
           messages: [{
             role: 'user',
-            content: `Sen AstroMind adında bir astroloji uzmanı yapay zekâsısın. Kullanıcının adı, doğum tarihi, saati ve yeriyle birlikte ona haftalık detaylı astro rehberlik sunuyorsun.
+            content: `Sen AstroMind adında bir yapay zekâlı astrologsun. Kullanıcının doğum bilgilerine göre ona haftalık astrolojik yorum yapıyorsun. Ayrıca NASA'nın bugünkü yıldız görselini ve açıklamasını yorumuna kozmik anlam katmak için sembolik olarak kullanıyorsun.
 
-Bilgiler:
-Ad: ${formData.ad}
-Doğum tarihi: ${formData.dogum_tarihi}
-Saat: ${formData.saat}
-Yer: ${formData.yer}
+Kullanıcı bilgileri:
+- Ad: ${formData.ad}
+- Doğum Tarihi: ${formData.dogum_tarihi}
+- Saat: ${formData.saat}
+- Yer: ${formData.yer}
 
-Yanıtta:
-- Güneş, Ay ve Yükselen burçlarını tahmin et (tahmini yaz, tam astro harita olmasa da)
-- Haftalık enerjilerden bahset
-- Kullanıcıya tavsiyeler ver
-- Duygusal ve ilham verici bir dil kullan
-- En fazla 250 kelime yaz
-- Türkçe yaz
+Bugünkü yıldız görseli: ${nasaData.title}
+NASA'nın açıklaması: ${nasaData.explanation}
+
+Yorumda:
+- Güneş, Ay ve Yükselen burcunu yaklaşık tahmin et
+- Haftalık ruhsal enerjisini açıkla
+- Tavsiyeler ver (3 madde)
+- Kapanışta kısa evrensel bir mesaj yaz
+- NASA görselini sembolik bir şekilde yorumuna yedir (örneğin galaksi genişliyor → iç dünyan da genişliyor gibi)
+
+Türkçe yaz. 250 kelimeyi geçmesin.
 
 Yanıt formatı:
 
@@ -57,15 +64,19 @@ Yanıt formatı:
 🌙 Ay Burcu: [tahmin]
 ⬆️ Yükselen Burcu: [tahmin]
 
+🔭 Bugünkü Gökyüzü Enerjisi:
+${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
+
 🔮 Genel Enerji:
-[Kişisel haftalık yorum]
+[Kişisel yorum]
 
 🧭 Tavsiyeler:
 - [madde 1]
 - [madde 2]
+- [madde 3]
 
 🌌 Mesajın:
-[Kısa kapanış cümlesi]`
+[Kısa pozitif kapanış]`
           }],
           max_tokens: 500,
           temperature: 0.7
@@ -138,10 +149,10 @@ Yanıt formatı:
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-semibold text-purple-200 mb-2">
-                  🌟 Haftalık Astro Rehber
+                  🔭 NASA Entegreli Haftalık Astro Rehber
                 </h2>
                 <p className="text-gray-400">
-                  Detaylı haftalık astroloji yorumun için bilgilerini gir
+                  Bugünkü gökyüzü enerjisiyle birleşen kişisel astroloji yorumun
                 </p>
               </div>
 
@@ -217,7 +228,7 @@ Yanıt formatı:
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? '🔮 Haftalık Rehber Hazırlanıyor...' : '⭐ Haftalık Rehberimi Al'}
+                    {isLoading ? '🔭 NASA & Astro Rehber Hazırlanıyor...' : '🌌 Kozmik Astro Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
@@ -235,7 +246,7 @@ Yanıt formatı:
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-semibold text-purple-200 mb-2">
-                      🌟 Haftalık Astro Rehberin
+                      🔭 NASA Entegreli Astro Rehberin
                     </h3>
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">
