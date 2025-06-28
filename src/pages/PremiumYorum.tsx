@@ -16,27 +16,55 @@ const PremiumYorum = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [demoMode, setDemoMode] = useState(true);
+
+  const getDemoResponse = (name: string) => {
+    return `✨ ${name} için Haftalık Astro Rehber:
+
+☀️ Güneş Burcu: İkizler
+🌙 Ay Burcu: Aslan
+⬆️ Yükselen Burcu: Terazi
+
+🔭 Bugünkü Gökyüzü Enerjisi:
+Hubble Teleskobu'nun Orion Nebulası görüntüsü → Evrendeki yaratım enerjisi senin içindeki potansiyeli aydınlatıyor. Yıldızların doğuş anı gibi, sen de yeni bir dönemin eşiğindesin.
+
+🔮 Genel Enerji:
+Bu hafta İkizler burcunun meraklı doğası ve Aslan ayının yaratıcı ateşi birleşiyor. Terazi yükselenin sayesinde her durumu dengeli değerlendiriyorsun. NASA'nın bugünkü yıldız görüntüsü gibi, sen de parlayan bir dönemin içindesin. Yeni projeler için mükemmel zaman!
+
+🧭 Tavsiyeler:
+- Yaratıcılığını özgürce ifade et, evren seni destekliyor
+- İletişimde kalbin konuşsun, samimiyetin kapıları açacak
+- Bugün gökyüzüne bak ve kendi potansiyelini hatırla
+
+🌌 Mesajın:
+Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun! ✨`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // First get NASA's Astronomy Picture of the Day
-      const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
-      const nasaData = await nasaResponse.json();
-      
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [{
-            role: 'user',
-            content: `Sen AstroMind adında bir yapay zekâlı astrologsun. Kullanıcının doğum bilgilerine göre ona haftalık astrolojik yorum yapıyorsun. Ayrıca NASA'nın bugünkü yıldız görselini ve açıklamasını yorumuna kozmik anlam katmak için sembolik olarak kullanıyorsun.
+      if (demoMode) {
+        // Demo mode - simulate loading and show demo response
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        setResult(getDemoResponse(formData.ad));
+      } else {
+        // First get NASA's Astronomy Picture of the Day
+        const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
+        const nasaData = await nasaResponse.json();
+        
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [{
+              role: 'user',
+              content: `Sen AstroMind adında bir yapay zekâlı astrologsun. Kullanıcının doğum bilgilerine göre ona haftalık astrolojik yorum yapıyorsun. Ayrıca NASA'nın bugünkü yıldız görselini ve açıklamasını yorumuna kozmik anlam katmak için sembolik olarak kullanıyorsun.
 
 Kullanıcı bilgileri:
 - Ad: ${formData.ad}
@@ -87,7 +115,11 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
       setResult(data.choices[0].message.content);
     } catch (error) {
       console.error('Error:', error);
-      setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
+      if (demoMode) {
+        setResult(getDemoResponse(formData.ad));
+      } else {
+        setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -145,6 +177,25 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
             </h1>
           </div>
 
+          {/* Demo Mode Toggle */}
+          <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-purple-200">Demo Modu</h3>
+                  <p className="text-sm text-gray-400">AI API anahtarı olmadan örnek NASA entegreli yanıt göster</p>
+                </div>
+                <Button
+                  onClick={() => setDemoMode(!demoMode)}
+                  variant={demoMode ? "default" : "outline"}
+                  className={demoMode ? "bg-green-600 hover:bg-green-700" : "border-purple-400 text-purple-200"}
+                >
+                  {demoMode ? "Demo Aktif" : "Demo Kapalı"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl mb-6">
             <CardContent className="p-8">
               <div className="text-center mb-6">
@@ -154,6 +205,11 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
                 <p className="text-gray-400">
                   Bugünkü gökyüzü enerjisiyle birleşen kişisel astroloji yorumun
                 </p>
+                {demoMode && (
+                  <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
+                    <span className="text-green-300 text-sm">🎭 Demo Modu Aktif</span>
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -228,7 +284,7 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? '🔭 NASA & Astro Rehber Hazırlanıyor...' : '🌌 Kozmik Astro Rehberimi Al'}
+                    {isLoading ? (demoMode ? '🎭 Demo NASA & Astro Rehber Hazırlanıyor...' : '🔭 NASA & Astro Rehber Hazırlanıyor...') : '🌌 Kozmik Astro Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
@@ -248,6 +304,11 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
                     <h3 className="text-2xl font-semibold text-purple-200 mb-2">
                       🔭 NASA Entegreli Astro Rehberin
                     </h3>
+                    {demoMode && (
+                      <div className="mt-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full inline-block">
+                        <span className="text-blue-300 text-sm">🎭 Bu bir demo yanıttır</span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">
                     {result}

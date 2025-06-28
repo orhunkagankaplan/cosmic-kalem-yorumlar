@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -17,23 +16,48 @@ const Premium = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [demoMode, setDemoMode] = useState(true);
+
+  const getDemoResponse = (name: string) => {
+    return `✨ ${name} için Haftalık Astro Rehber:
+
+☀️ Güneş Burcu: İkizler
+🌙 Ay Burcu: Aslan  
+⬆️ Yükselen Burcu: Terazi
+
+🔮 Genel Enerji:
+Bu hafta yaratıcı enerjiler ön planda! İkizler burcunun iletişim yeteneği ve Aslan ayının cesaretiyle birleşen enerjin, seni yeni projelere yönlendirecek. Terazi yükselenin sayesinde ilişkilerinde denge arayışı içinde olacaksın. Pazartesi ve salı günleri özellikle verimli geçecek.
+
+🧭 Tavsiyeler:
+- Yaratıcı projelerine zaman ayır, ilham perilerim seninle
+- İletişimde samimi ol, kalbin konuşsun
+- Hafta sonu dinlenmeyi ihmal etme
+
+🌌 Mesajın:
+Evren sana bu hafta yeni kapılar açıyor, cesaretle adım at! ✨`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [{
-            role: 'user',
-            content: `Sen AstroMind adında bir astroloji uzmanı yapay zekâsısın. Kullanıcının adı, doğum tarihi, saati ve yeriyle birlikte ona haftalık detaylı astro rehberlik sunuyorsun.
+      if (demoMode) {
+        // Demo mode - simulate loading and show demo response
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setResult(getDemoResponse(formData.ad));
+      } else {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [{
+              role: 'user',
+              content: `Sen AstroMind adında bir astroloji uzmanı yapay zekâsısın. Kullanıcının adı, doğum tarihi, saati ve yeriyle birlikte ona haftalık detaylı astro rehberlik sunuyorsun.
 
 Bilgiler:
 Ad: ${formData.ad}
@@ -69,14 +93,18 @@ Yanıt formatı:
           }],
           max_tokens: 500,
           temperature: 0.7
-        })
-      });
+        });
 
-      const data = await response.json();
-      setResult(data.choices[0].message.content);
+        const data = await response.json();
+        setResult(data.choices[0].message.content);
+      }
     } catch (error) {
       console.error('Error:', error);
-      setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
+      if (demoMode) {
+        setResult(getDemoResponse(formData.ad));
+      } else {
+        setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -134,6 +162,25 @@ Yanıt formatı:
             </h1>
           </div>
 
+          {/* Demo Mode Toggle */}
+          <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-purple-200">Demo Modu</h3>
+                  <p className="text-sm text-gray-400">AI API anahtarı olmadan örnek yanıt göster</p>
+                </div>
+                <Button
+                  onClick={() => setDemoMode(!demoMode)}
+                  variant={demoMode ? "default" : "outline"}
+                  className={demoMode ? "bg-green-600 hover:bg-green-700" : "border-purple-400 text-purple-200"}
+                >
+                  {demoMode ? "Demo Aktif" : "Demo Kapalı"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl mb-6">
             <CardContent className="p-8">
               <div className="text-center mb-6">
@@ -143,6 +190,11 @@ Yanıt formatı:
                 <p className="text-gray-400">
                   Detaylı haftalık astroloji yorumun için bilgilerini gir
                 </p>
+                {demoMode && (
+                  <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
+                    <span className="text-green-300 text-sm">🎭 Demo Modu Aktif</span>
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -217,7 +269,7 @@ Yanıt formatı:
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? '🔮 Haftalık Rehber Hazırlanıyor...' : '⭐ Haftalık Rehberimi Al'}
+                    {isLoading ? (demoMode ? '🎭 Demo Rehber Hazırlanıyor...' : '🔮 Haftalık Rehber Hazırlanıyor...') : '⭐ Haftalık Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
@@ -237,6 +289,11 @@ Yanıt formatı:
                     <h3 className="text-2xl font-semibold text-purple-200 mb-2">
                       🌟 Haftalık Astro Rehberin
                     </h3>
+                    {demoMode && (
+                      <div className="mt-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full inline-block">
+                        <span className="text-blue-300 text-sm">🎭 Bu bir demo yanıttır</span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">
                     {result}
