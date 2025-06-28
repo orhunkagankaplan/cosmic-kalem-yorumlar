@@ -23,7 +23,7 @@ const PremiumYorum = () => {
     
     try {
       // First get NASA's Astronomy Picture of the Day
-      const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+      const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
       const nasaData = await nasaResponse.json();
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
