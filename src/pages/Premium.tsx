@@ -13,7 +13,8 @@ const Premium = () => {
     ad: '',
     dogum_tarihi: '',
     saat: '',
-    yer: ''
+    yer: '',
+    sosyal_medya: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
@@ -28,6 +29,9 @@ const Premium = () => {
 
 🔮 Genel Enerji:
 Bu hafta yaratıcı enerjiler ön planda! İkizler burcunun iletişim yeteneği ve Aslan ayının cesaretiyle birleşen enerjin, seni yeni projelere yönlendirecek. Terazi yükselenin sayesinde ilişkilerinde denge arayışı içinde olacaksın. Pazartesi ve salı günleri özellikle verimli geçecek.
+
+💬 Sosyal Medya Ruh Hali:
+Son paylaşımlarından pozitif ve yaratıcı bir enerji yansıyor. İçsel motivasyonun yüksek görünüyor.
 
 🧭 Tavsiyeler:
 - Yaratıcı projelerine zaman ayır, ilham perilerim seninle
@@ -65,10 +69,12 @@ Ad: ${formData.ad}
 Doğum tarihi: ${formData.dogum_tarihi}
 Saat: ${formData.saat}
 Yer: ${formData.yer}
+Sosyal medya paylaşımları: ${formData.sosyal_medya || 'Belirtilmedi'}
 
 Yanıtta:
 - Güneş, Ay ve Yükselen burçlarını tahmin et (tahmini yaz, tam astro harita olmasa da)
 - Haftalık enerjilerden bahset
+- Eğer sosyal medya yazısı varsa, yazılardan duygusal ton ve ruh halini çıkar
 - Kullanıcıya tavsiyeler ver
 - Duygusal ve ilham verici bir dil kullan
 - En fazla 250 kelime yaz
@@ -85,7 +91,7 @@ Yanıt formatı:
 🔮 Genel Enerji:
 [Kişisel haftalık yorum]
 
-🧭 Tavsiyeler:
+${formData.sosyal_medya ? '💬 Sosyal Medya Ruh Hali:\n[Sosyal medya analizi]\n\n' : ''}🧭 Tavsiyeler:
 - [madde 1]
 - [madde 2]
 
@@ -112,7 +118,7 @@ Yanıt formatı:
     }
   };
 
-  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [field]: e.target.value
@@ -260,6 +266,23 @@ Yanıt formatı:
                     required
                     disabled={isLoading}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sosyal_medya" className="text-purple-200 font-medium">
+                    📱 Son Sosyal Medya Paylaşımların (İsteğe Bağlı)
+                  </Label>
+                  <textarea
+                    id="sosyal_medya"
+                    value={formData.sosyal_medya}
+                    onChange={handleChange('sosyal_medya')}
+                    placeholder="Son sosyal medya paylaşımlarını buraya yazabilirsin..."
+                    className="w-full bg-slate-700/50 border-purple-400/30 text-white placeholder-gray-400 focus:border-purple-400 rounded-md p-3 min-h-[100px] resize-none"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Bu bilgi ruh halini daha iyi anlamamı sağlar ve daha kişisel tavsiyeler vermemi sağlar.
+                  </p>
                 </div>
 
                 <motion.div
