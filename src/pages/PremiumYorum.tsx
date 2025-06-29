@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -105,14 +106,15 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
 
 🌌 Mesajın:
 [Kısa pozitif kapanış]`
-          }],
-          max_tokens: 500,
-          temperature: 0.7
-        })
-      });
+            }],
+            max_tokens: 500,
+            temperature: 0.7
+          })
+        });
 
-      const data = await response.json();
-      setResult(data.choices[0].message.content);
+        const data = await response.json();
+        setResult(data.choices[0].message.content);
+      }
     } catch (error) {
       console.error('Error:', error);
       if (demoMode) {

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -90,9 +91,10 @@ Yanıt formatı:
 
 🌌 Mesajın:
 [Kısa kapanış cümlesi]`
-          }],
-          max_tokens: 500,
-          temperature: 0.7
+            }],
+            max_tokens: 500,
+            temperature: 0.7
+          })
         });
 
         const data = await response.json();
