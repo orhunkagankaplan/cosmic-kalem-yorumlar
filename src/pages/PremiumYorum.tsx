@@ -12,34 +12,39 @@ const PremiumYorum = () => {
     ad: '',
     dogum_tarihi: '',
     saat: '',
-    yer: ''
+    yer: '',
+    sosyal_medya: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
   const [demoMode, setDemoMode] = useState(true);
 
   const getDemoResponse = (name: string) => {
-    return `✨ ${name} için NASA Entegreli Haftalık Astro Rehber:
+    return `✨ ${name} için Haftalık Astro Rehber:
 
 ☀️ Güneş Burcu: İkizler
 🌙 Ay Burcu: Aslan
 ⬆️ Yükselen Burcu: Terazi
 
-🔭 Bugünkü NASA Gökyüzü Enerjisi:
+🔭 Bugünkü Gökyüzü Enerjisi:
 "Orion Nebulası: Yıldızların Doğuş Yeri" → Bu kozmik kreş gibi nebula, senin içindeki yaratıcı potansiyelin sembolü. Hubble Teleskobu'nun çektiği bu muhteşem görüntü, 1,344 ışık yılı uzaktaki yıldız fabrikasını gösteriyor. Tıpkı bu nebulada yeni yıldızlar doğduğu gibi, sen de yeni bir dönemin eşiğindesin.
 
+🌟 Yükselen Burç Etkisi:
+Terazi yükselenin sana doğal bir estetik anlayışı ve adalet duygusu veriyor. Bu hafta bu enerjin özellikle güçlü - kararlarında dengeyi gözetecek, güzelliği fark edeceksin.
+
+💬 Sosyal Medya Ruh Hali:
+Son paylaşımlarından iyimser ve yaratıcı bir enerji yansıyor. İçsel motivasyonun yüksek görünüyor.
+
 🔮 Genel Enerji:
-Bu hafta İkizler burcunun meraklı doğası ve Aslan ayının yaratıcı ateşi birleşiyor. Terazi yükselenin sayesinde her durumu dengeli değerlendiriyorsun. NASA'nın bugünkü Orion Nebulası görüntüsü gibi, sen de parlayan bir yaratım döneminin içindesin. Yeni projeler için mükemmel zaman!
+Bu hafta İkizler burcunun meraklı doğası ve Aslan ayının yaratıcı ateşi birleşiyor. NASA'nın bugünkü Orion Nebulası görüntüsü gibi, sen de parlayan bir yaratım döneminin içindesin.
 
 🧭 Tavsiyeler:
 - Yaratıcılığını özgürce ifade et, evren seni destekliyor
-- İletişimde kalbin konuşsun, samimiyetin kapıları açacak  
+- İletişimde kalbin konuşsun, samimiyetin kapıları açacak
 - Bugün gökyüzüne bak ve kendi sınırsız potansiyelini hatırla
 
 🌌 Mesajın:
-Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun! ✨
-
-🔬 NASA Bilgisi: Orion Nebulası, M42 olarak da bilinen bu alan yaklaşık 24 ışık yılı genişliğinde ve binlerce genç yıldızın doğduğu kozmik bir kreştir.`;
+Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun! ✨`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,11 +53,9 @@ Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun!
     
     try {
       if (demoMode) {
-        // Demo mode - simulate loading and show demo response
         await new Promise(resolve => setTimeout(resolve, 3000));
         setResult(getDemoResponse(formData.ad));
       } else {
-        // First get NASA's Astronomy Picture of the Day
         const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
         const nasaData = await nasaResponse.json();
         
@@ -63,10 +66,10 @@ Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun!
             'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: 'gpt-4.1-2025-04-14',
             messages: [{
               role: 'user',
-              content: `Sen AstroMind adında bir yapay zekâlı astrologsun. Kullanıcının doğum bilgilerine göre ona haftalık astrolojik yorum yapıyorsun. Ayrıca NASA'nın bugünkü yıldız görselini ve açıklamasını yorumuna kozmik anlam katmak için sembolik olarak kullanıyorsun.
+              content: `Sen AstroMind adında bir yapay zekâlı astrologsun. Kullanıcının doğum bilgileriyle birlikte NASA'nın bugünkü gökyüzü görselini ve varsa sosyal medya yazılarını da analiz ederek ona özel bir haftalık astroloji rehberi hazırlıyorsun.
 
 Kullanıcı bilgileri:
 - Ad: ${formData.ad}
@@ -75,37 +78,48 @@ Kullanıcı bilgileri:
 - Yer: ${formData.yer}
 
 Bugünkü yıldız görseli: ${nasaData.title}
-NASA'nın açıklaması: ${nasaData.explanation}
+NASA açıklaması: ${nasaData.explanation}
 
-Yorumda:
-- Güneş, Ay ve Yükselen burcunu yaklaşık tahmin et
-- Haftalık ruhsal enerjisini açıkla
-- Tavsiyeler ver (3 madde)
-- Kapanışta kısa evrensel bir mesaj yaz
-- NASA görselini sembolik bir şekilde yorumuna yedir (örneğin galaksi genişliyor → iç dünyan da genişliyor gibi)
+Kullanıcının sosyal medya yazıları (isteğe bağlı): ${formData.sosyal_medya || 'Belirtilmedi'}
 
-Türkçe yaz. 250 kelimeyi geçmesin.
+Görevin:
+1. Güneş, Ay ve Yükselen burçlarını yaklaşık tahmin et  
+2. NASA görselinden sembolik bir çıkarım yap (örneğin: galaksi genişliyorsa → içsel büyüme teması)  
+3. Yükselen burca özel karakter analizi ve bu haftaya etkisi  
+4. Eğer kullanıcı sosyal medya yazısı girdiyse:
+   - Yazılardan duygusal ton, zihinsel odak ve ruh halini çıkar
+   - Astrolojik tavsiyeleri bu kişisel veriye göre uyarla
+5. 3 maddelik tavsiye ver  
+6. Kısa pozitif kapanış mesajı yaz
+
+Türkçe, pozitif ve sezgisel bir ton kullan. 250 kelimeyi geçmesin.
 
 Yanıt formatı:
 
 ✨ ${formData.ad} için Haftalık Astro Rehber:
 
-☀️ Güneş Burcu: [tahmin]
-🌙 Ay Burcu: [tahmin]
+☀️ Güneş Burcu: [tahmin]  
+🌙 Ay Burcu: [tahmin]  
 ⬆️ Yükselen Burcu: [tahmin]
 
-🔭 Bugünkü Gökyüzü Enerjisi:
-${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
+🔭 Bugünkü Gökyüzü Enerjisi:  
+${nasaData.title} → [sembolik anlam]
 
-🔮 Genel Enerji:
-[Kişisel yorum]
+🌟 Yükselen Burç Etkisi:  
+[Yükselen burca özel kişilik + haftalık etkisi]
 
-🧭 Tavsiyeler:
-- [madde 1]
-- [madde 2]
-- [madde 3]
+💬 Sosyal Medya Ruh Hali (varsa):  
+[Eğer sosyal medya yazısı varsa analiz yap]
 
-🌌 Mesajın:
+🔮 Genel Enerji:  
+[Kişisel haftalık yorum]
+
+🧭 Tavsiyeler:  
+- [1]  
+- [2]  
+- [3]
+
+🌌 Mesajın:  
 [Kısa pozitif kapanış]`
             }],
             max_tokens: 500,
@@ -128,7 +142,7 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
     }
   };
 
-  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [field]: e.target.value
@@ -276,6 +290,23 @@ ${nasaData.title} → [NASA açıklamasından sembolik çıkarım]
                     required
                     disabled={isLoading}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sosyal_medya" className="text-purple-200 font-medium">
+                    📱 Son Sosyal Medya Paylaşımların (İsteğe Bağlı)
+                  </Label>
+                  <textarea
+                    id="sosyal_medya"
+                    value={formData.sosyal_medya}
+                    onChange={handleChange('sosyal_medya')}
+                    placeholder="Son sosyal medya paylaşımlarını buraya yazabilirsin..."
+                    className="w-full bg-slate-700/50 border-purple-400/30 text-white placeholder-gray-400 focus:border-purple-400 rounded-md p-3 min-h-[100px] resize-none"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Bu bilgi ruh halini daha iyi anlamamı sağlar ve daha kişisel tavsiyeler vermemi sağlar.
+                  </p>
                 </div>
 
                 <motion.div
