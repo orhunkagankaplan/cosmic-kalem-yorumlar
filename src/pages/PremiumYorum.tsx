@@ -149,6 +149,15 @@ ${nasaData.title} → [sembolik anlam]
     }));
   };
 
+  const toggleDemoMode = () => {
+    console.log('Demo mode toggle clicked, current state:', demoMode);
+    setDemoMode(prev => {
+      const newValue = !prev;
+      console.log('Demo mode changed to:', newValue);
+      return newValue;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       {/* Animated stars background */}
@@ -203,9 +212,9 @@ ${nasaData.title} → [sembolik anlam]
                   <p className="text-sm text-gray-400">AI API anahtarı olmadan örnek NASA entegreli yanıt göster</p>
                 </div>
                 <Button
-                  onClick={() => setDemoMode(!demoMode)}
+                  onClick={toggleDemoMode}
                   variant={demoMode ? "default" : "outline"}
-                  className={demoMode ? "bg-green-600 hover:bg-green-700" : "border-purple-400 text-purple-200"}
+                  className={demoMode ? "bg-green-600 hover:bg-green-700" : "border-purple-400 text-purple-200 hover:bg-purple-400/10"}
                 >
                   {demoMode ? "Demo Aktif" : "Demo Kapalı"}
                 </Button>
