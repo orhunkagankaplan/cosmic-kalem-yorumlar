@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -20,25 +19,27 @@ const PremiumYorum = () => {
   const [demoMode, setDemoMode] = useState(true);
 
   const getDemoResponse = (name: string) => {
-    return `✨ ${name} için Haftalık Astro Rehber:
+    return `✨ ${name} için NASA Entegreli Haftalık Astro Rehber:
 
 ☀️ Güneş Burcu: İkizler
 🌙 Ay Burcu: Aslan
 ⬆️ Yükselen Burcu: Terazi
 
-🔭 Bugünkü Gökyüzü Enerjisi:
-Hubble Teleskobu'nun Orion Nebulası görüntüsü → Evrendeki yaratım enerjisi senin içindeki potansiyeli aydınlatıyor. Yıldızların doğuş anı gibi, sen de yeni bir dönemin eşiğindesin.
+🔭 Bugünkü NASA Gökyüzü Enerjisi:
+"Orion Nebulası: Yıldızların Doğuş Yeri" → Bu kozmik kreş gibi nebula, senin içindeki yaratıcı potansiyelin sembolü. Hubble Teleskobu'nun çektiği bu muhteşem görüntü, 1,344 ışık yılı uzaktaki yıldız fabrikasını gösteriyor. Tıpkı bu nebulada yeni yıldızlar doğduğu gibi, sen de yeni bir dönemin eşiğindesin.
 
 🔮 Genel Enerji:
-Bu hafta İkizler burcunun meraklı doğası ve Aslan ayının yaratıcı ateşi birleşiyor. Terazi yükselenin sayesinde her durumu dengeli değerlendiriyorsun. NASA'nın bugünkü yıldız görüntüsü gibi, sen de parlayan bir dönemin içindesin. Yeni projeler için mükemmel zaman!
+Bu hafta İkizler burcunun meraklı doğası ve Aslan ayının yaratıcı ateşi birleşiyor. Terazi yükselenin sayesinde her durumu dengeli değerlendiriyorsun. NASA'nın bugünkü Orion Nebulası görüntüsü gibi, sen de parlayan bir yaratım döneminin içindesin. Yeni projeler için mükemmel zaman!
 
 🧭 Tavsiyeler:
 - Yaratıcılığını özgürce ifade et, evren seni destekliyor
-- İletişimde kalbin konuşsun, samimiyetin kapıları açacak
-- Bugün gökyüzüne bak ve kendi potansiyelini hatırla
+- İletişimde kalbin konuşsun, samimiyetin kapıları açacak  
+- Bugün gökyüzüne bak ve kendi sınırsız potansiyelini hatırla
 
 🌌 Mesajın:
-Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun! ✨`;
+Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun! ✨
+
+🔬 NASA Bilgisi: Orion Nebulası, M42 olarak da bilinen bu alan yaklaşık 24 ışık yılı genişliğinde ve binlerce genç yıldızın doğduğu kozmik bir kreştir.`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
