@@ -30,10 +30,10 @@ const Premium = () => {
 🔮 Genel Enerji:
 Bu hafta yaratıcı enerjiler ön planda! İkizler burcunun iletişim yeteneği ve Aslan ayının cesaretiyle birleşen enerjin, seni yeni projelere yönlendirecek. Terazi yükselenin sayesinde ilişkilerinde denge arayışı içinde olacaksın. Pazartesi ve salı günleri özellikle verimli geçecek.
 
-💬 Sosyal Medya Ruh Hali:
-Son paylaşımlarından pozitif ve yaratıcı bir enerji yansıyor. İçsel motivasyonun yüksek görünüyor.
+${formData.sosyal_medya ? `💬 Sosyal Medya Ruh Hali:
+Son paylaşımlarından pozitif ve yaratıcı bir enerji yansıyor. İçsel motivasyonun yüksek görünüyor ve kendini ifade etme konusunda cesaretlisin.
 
-🧭 Tavsiyeler:
+` : ''}🧭 Tavsiyeler:
 - Yaratıcı projelerine zaman ayır, ilham perilerim seninle
 - İletişimde samimi ol, kalbin konuşsun
 - Hafta sonu dinlenmeyi ihmal etme
@@ -44,14 +44,19 @@ Evren sana bu hafta yeni kapılar açıyor, cesaretle adım at! ✨`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     setIsLoading(true);
     
     try {
       if (demoMode) {
         // Demo mode - simulate loading and show demo response
+        console.log('Demo mode active, generating demo response...');
         await new Promise(resolve => setTimeout(resolve, 2000));
-        setResult(getDemoResponse(formData.ad));
+        const demoResult = getDemoResponse(formData.ad);
+        console.log('Demo result generated:', demoResult);
+        setResult(demoResult);
       } else {
+        console.log('Real API mode, calling OpenAI...');
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -104,25 +109,39 @@ ${formData.sosyal_medya ? '💬 Sosyal Medya Ruh Hali:\n[Sosyal medya analizi]\n
         });
 
         const data = await response.json();
+        console.log('OpenAI response:', data);
         setResult(data.choices[0].message.content);
       }
     } catch (error) {
       console.error('Error:', error);
       if (demoMode) {
-        setResult(getDemoResponse(formData.ad));
+        const fallbackResult = getDemoResponse(formData.ad);
+        console.log('Using fallback demo result:', fallbackResult);
+        setResult(fallbackResult);
       } else {
         setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
       }
     } finally {
       setIsLoading(false);
+      console.log('Form submission completed');
     }
   };
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    console.log(`Field ${field} changed to:`, e.target.value);
     setFormData(prev => ({
       ...prev,
       [field]: e.target.value
     }));
+  };
+
+  const toggleDemoMode = () => {
+    console.log('Demo mode toggle clicked, current state:', demoMode);
+    setDemoMode(prev => {
+      const newValue = !prev;
+      console.log('Demo mode changed to:', newValue);
+      return newValue;
+    });
   };
 
   return (
@@ -179,9 +198,9 @@ ${formData.sosyal_medya ? '💬 Sosyal Medya Ruh Hali:\n[Sosyal medya analizi]\n
                   <p className="text-sm text-gray-400">AI API anahtarı olmadan örnek yanıt göster</p>
                 </div>
                 <Button
-                  onClick={() => setDemoMode(!demoMode)}
+                  onClick={toggleDemoMode}
                   variant={demoMode ? "default" : "outline"}
-                  className={demoMode ? "bg-green-600 hover:bg-green-700" : "border-purple-400 text-purple-200"}
+                  className={demoMode ? "bg-green-600 hover:bg-green-700" : "border-purple-400 text-purple-200 hover:bg-purple-400/10"}
                 >
                   {demoMode ? "Demo Aktif" : "Demo Kapalı"}
                 </Button>
