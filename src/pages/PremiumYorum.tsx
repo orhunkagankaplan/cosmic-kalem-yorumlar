@@ -20,7 +20,7 @@ const PremiumYorum = () => {
   const [demoMode, setDemoMode] = useState(true);
 
   const getDemoResponse = (name: string) => {
-    return `✨ ${name} için Haftalık Astro Rehber:
+    return `✨ ${name} için NASA Entegreli Haftalık Astro Rehber:
 
 ☀️ Güneş Burcu: İkizler
 🌙 Ay Burcu: Aslan
@@ -32,10 +32,10 @@ const PremiumYorum = () => {
 🌟 Yükselen Burç Etkisi:
 Terazi yükselenin sana doğal bir estetik anlayışı ve adalet duygusu veriyor. Bu hafta bu enerjin özellikle güçlü - kararlarında dengeyi gözetecek, güzelliği fark edeceksin.
 
-💬 Sosyal Medya Ruh Hali:
+${formData.sosyal_medya ? `💬 Sosyal Medya Ruh Hali:
 Son paylaşımlarından iyimser ve yaratıcı bir enerji yansıyor. İçsel motivasyonun yüksek görünüyor.
 
-🔮 Genel Enerji:
+` : ''}🔮 Genel Enerji:
 Bu hafta İkizler burcunun meraklı doğası ve Aslan ayının yaratıcı ateşi birleşiyor. NASA'nın bugünkü Orion Nebulası görüntüsü gibi, sen de parlayan bir yaratım döneminin içindesin.
 
 🧭 Tavsiyeler:
@@ -49,16 +49,23 @@ Orion Nebulası'ndaki yıldızlar gibi, sen de parlak bir gelecek yaratıyorsun!
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('PremiumYorum form submitted with data:', formData);
     setIsLoading(true);
     
     try {
       if (demoMode) {
+        console.log('Demo mode active, simulating NASA API call...');
         await new Promise(resolve => setTimeout(resolve, 3000));
-        setResult(getDemoResponse(formData.ad));
+        const demoResult = getDemoResponse(formData.ad);
+        console.log('Demo NASA + Astro result generated:', demoResult);
+        setResult(demoResult);
       } else {
+        console.log('Real mode: Fetching NASA APOD...');
         const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
         const nasaData = await nasaResponse.json();
+        console.log('NASA data received:', nasaData);
         
+        console.log('Calling OpenAI with NASA data...');
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -128,21 +135,26 @@ ${nasaData.title} → [sembolik anlam]
         });
 
         const data = await response.json();
+        console.log('OpenAI response received:', data);
         setResult(data.choices[0].message.content);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in PremiumYorum:', error);
       if (demoMode) {
-        setResult(getDemoResponse(formData.ad));
+        const fallbackResult = getDemoResponse(formData.ad);
+        console.log('Using fallback demo result:', fallbackResult);
+        setResult(fallbackResult);
       } else {
         setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
       }
     } finally {
       setIsLoading(false);
+      console.log('PremiumYorum form submission completed');
     }
   };
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    console.log(`PremiumYorum field ${field} changed to:`, e.target.value);
     setFormData(prev => ({
       ...prev,
       [field]: e.target.value
@@ -150,10 +162,10 @@ ${nasaData.title} → [sembolik anlam]
   };
 
   const toggleDemoMode = () => {
-    console.log('Demo mode toggle clicked, current state:', demoMode);
+    console.log('PremiumYorum demo mode toggle clicked, current state:', demoMode);
     setDemoMode(prev => {
       const newValue = !prev;
-      console.log('Demo mode changed to:', newValue);
+      console.log('PremiumYorum demo mode changed to:', newValue);
       return newValue;
     });
   };
