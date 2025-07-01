@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,14 +46,16 @@ Lütfen şu formatta yanıt ver:
 
 Tüm metin Türkçe olmalı ve kişisel, sıcak bir ton kullan. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu analizi yaparken dikkate al.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${openRouterApiKey}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://astromind.lovable.app',
+        'X-Title': 'AstroMind AI Astrology'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'mistralai/mixtral-8x7b-instruct',
         messages: [
           {
             role: 'system',
@@ -71,14 +73,14 @@ Tüm metin Türkçe olmalı ve kişisel, sıcak bir ton kullan. Bugünün tarihi
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('OpenAI API Error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('OpenRouter API Error:', errorData);
+      throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiReading = data.choices[0].message.content;
 
-    console.log('AI Reading generated successfully');
+    console.log('AI Reading generated successfully with Mixtral-8x7b-instruct');
 
     return new Response(JSON.stringify({ 
       success: true,
