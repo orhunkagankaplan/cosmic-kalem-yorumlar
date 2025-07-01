@@ -1,5 +1,3 @@
-
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -17,7 +15,78 @@ serve(async (req) => {
   }
 
   try {
-    const { birthData } = await req.json();
+    const requestBody = await req.json();
+    
+    // Handle translation requests
+    if (requestBody.translateRequest) {
+      const { title, explanation } = requestBody.translateRequest;
+      
+      console.log('Processing translation request...');
+
+      const translationPrompt = `Lütfen aşağıdaki NASA metinlerini Türkçe'ye çevir. Bilimsel ve astronomik terimleri doğru şekilde çevir:
+
+Başlık: "${title}"
+
+Açıklama: "${explanation}"
+
+Lütfen şu formatta yanıt ver:
+BAŞLIK: [Türkçe başlık]
+AÇIKLAMA: [Türkçe açıklama]`;
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openRouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://astromind.lovable.app',
+          'X-Title': 'AstroMind NASA Translation'
+        },
+        body: JSON.stringify({
+          model: 'mistralai/mixtral-8x7b-instruct',
+          messages: [
+            {
+              role: 'system',
+              content: 'Sen NASA metinlerini Türkçe\'ye çeviren uzman bir çevirmensin. Bilimsel terimleri doğru şekilde çevirirsin.'
+            },
+            {
+              role: 'user',
+              content: translationPrompt
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 1000,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Translation API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const translatedText = data.choices[0].message.content;
+      
+      // Parse the translated response
+      const titleMatch = translatedText.match(/BAŞLIK:\s*(.+?)(?:\n|AÇIKLAMA)/);
+      const explanationMatch = translatedText.match(/AÇIKLAMA:\s*([\s\S]+?)$/);
+      
+      const translatedTitle = titleMatch ? titleMatch[1].trim() : title;
+      const translatedExplanation = explanationMatch ? explanationMatch[1].trim() : explanation;
+
+      console.log('Translation completed successfully');
+
+      return new Response(JSON.stringify({ 
+        success: true,
+        translation: {
+          title: translatedTitle,
+          explanation: translatedExplanation
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Handle astrology reading requests (existing functionality)
+    const { birthData } = requestBody;
     
     console.log('Received birth data:', birthData);
 
@@ -104,4 +173,3 @@ Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel
     });
   }
 });
-

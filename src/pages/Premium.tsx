@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { translateNasaContent } from '@/utils/translationService';
 
 const Premium = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +30,18 @@ const Premium = () => {
       const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
       const nasaData = await nasaResponse.json();
       console.log('NASA data received:', nasaData);
-      setNasaImage(nasaData);
+      
+      // Translate NASA content to Turkish
+      console.log('Translating NASA content to Turkish...');
+      const translatedContent = await translateNasaContent(nasaData.title, nasaData.explanation);
+      
+      const translatedNasaData = {
+        ...nasaData,
+        title: translatedContent.title,
+        explanation: translatedContent.explanation
+      };
+      
+      setNasaImage(translatedNasaData);
       
       console.log('Calling Supabase edge function with NASA data...');
       const response = await fetch('https://cmqeosfptaxtctbzjulp.supabase.co/functions/v1/generate-astrology-reading', {
@@ -54,18 +65,18 @@ const Premium = () => {
       console.log('Supabase edge function response received:', data);
       
       if (data.success) {
-        // NASA entegreli analizi formatla
+        // NASA entegreli analizi formatla (now with Turkish content)
         const enhancedReading = `✨ ${formData.ad} için NASA Entegreli Haftalık Astro Rehber:
 
 🌌 Bugünkü Gökyüzü Enerjisi:
-"${nasaData.title}" - ${nasaData.explanation.substring(0, 200)}...
+"${translatedNasaData.title}" - ${translatedNasaData.explanation.substring(0, 200)}...
 
 ${data.reading}
 
 🔭 NASA Kozmik Mesajı:
-Bu gökyüzü karesi evrenin sana gönderdiği özel bir işaret. ${nasaData.title.toLowerCase().includes('galaxy') ? 'Galaksinin genişleme enerjisi senin de içsel büyümene rehberlik ediyor.' : 
-nasaData.title.toLowerCase().includes('star') ? 'Yıldızların ışığı senin yolunu aydınlatmak için yanıyor.' :
-nasaData.title.toLowerCase().includes('planet') ? 'Gezegensel hareketler senin yaşam döngünle uyum halinde.' :
+Bu gökyüzü karesi evrenin sana gönderdiği özel bir işaret. ${translatedNasaData.title.toLowerCase().includes('galaksi') ? 'Galaksinin genişleme enerjisi senin de içsel büyümene rehberlik ediyor.' : 
+translatedNasaData.title.toLowerCase().includes('yıldız') ? 'Yıldızların ışığı senin yolunu aydınlatmak için yanıyor.' :
+translatedNasaData.title.toLowerCase().includes('gezegen') ? 'Gezegensel hareketler senin yaşam döngünle uyum halinde.' :
 'Evrenin bu benzersiz manzarası senin özel yolculuğunu simgeliyor.'} 
 
 ${formData.sosyal_medya ? `💬 Sosyal Medya Enerji Analizi:
@@ -296,7 +307,7 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl">
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-semibent text-purple-200 mb-2">
+                    <h3 className="text-2xl font-semibold text-purple-200 mb-2">
                       🛸 NASA Entegreli Haftalık Rehberin
                     </h3>
                     <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
