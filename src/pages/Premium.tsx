@@ -18,130 +18,81 @@ const Premium = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
-  const [demoMode, setDemoMode] = useState(true);
-
-  const getDemoResponse = (name: string) => {
-    return `✨ ${name} için Haftalık Astro Rehber:
-
-☀️ Güneş Burcu: İkizler
-🌙 Ay Burcu: Aslan  
-⬆️ Yükselen Burcu: Terazi
-
-🔮 Genel Enerji:
-Bu hafta yaratıcı enerjiler ön planda! İkizler burcunun iletişim yeteneği ve Aslan ayının cesaretiyle birleşen enerjin, seni yeni projelere yönlendirecek. Terazi yükselenin sayesinde ilişkilerinde denge arayışı içinde olacaksın. Pazartesi ve salı günleri özellikle verimli geçecek.
-
-${formData.sosyal_medya ? `💬 Sosyal Medya Ruh Hali:
-Son paylaşımlarından pozitif ve yaratıcı bir enerji yansıyor. İçsel motivasyonun yüksek görünüyor ve kendini ifade etme konusunda cesaretlisin.
-
-` : ''}🧭 Tavsiyeler:
-- Yaratıcı projelerine zaman ayır, ilham perilerim seninle
-- İletişimde samimi ol, kalbin konuşsun
-- Hafta sonu dinlenmeyi ihmal etme
-
-🌌 Mesajın:
-Evren sana bu hafta yeni kapılar açıyor, cesaretle adım at! ✨`;
-  };
+  const [nasaImage, setNasaImage] = useState<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with data:', formData);
+    console.log('Premium form submitted with data:', formData);
     setIsLoading(true);
     
     try {
-      if (demoMode) {
-        // Demo mode - simulate loading and show demo response
-        console.log('Demo mode active, generating demo response...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        const demoResult = getDemoResponse(formData.ad);
-        console.log('Demo result generated:', demoResult);
-        setResult(demoResult);
+      console.log('Fetching NASA APOD...');
+      const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
+      const nasaData = await nasaResponse.json();
+      console.log('NASA data received:', nasaData);
+      setNasaImage(nasaData);
+      
+      console.log('Calling Supabase edge function with NASA data...');
+      const response = await fetch('https://cmqeosfptaxtctbzjulp.supabase.co/functions/v1/generate-astrology-reading', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWVvc2ZwdGF4dGN0YnpqdWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjE1NzEsImV4cCI6MjA2NjQ5NzU3MX0.tilAXTWWhABfVfS5RCMnKYd8gfVR5bCHIBawilEuOMc`,
+        },
+        body: JSON.stringify({
+          birthData: {
+            fullName: formData.ad,
+            birthDate: formData.dogum_tarihi,
+            birthTime: formData.saat,
+            birthCity: formData.yer,
+            birthCountry: 'Türkiye'
+          }
+        })
+      });
+
+      const data = await response.json();
+      console.log('Supabase edge function response received:', data);
+      
+      if (data.success) {
+        // NASA entegreli analizi formatla
+        const enhancedReading = `✨ ${formData.ad} için NASA Entegreli Haftalık Astro Rehber:
+
+🌌 Bugünkü Gökyüzü Enerjisi:
+"${nasaData.title}" - ${nasaData.explanation.substring(0, 200)}...
+
+${data.reading}
+
+🔭 NASA Kozmik Mesajı:
+Bu gökyüzü karesi evrenin sana gönderdiği özel bir işaret. ${nasaData.title.toLowerCase().includes('galaxy') ? 'Galaksinin genişleme enerjisi senin de içsel büyümene rehberlik ediyor.' : 
+nasaData.title.toLowerCase().includes('star') ? 'Yıldızların ışığı senin yolunu aydınlatmak için yanıyor.' :
+nasaData.title.toLowerCase().includes('planet') ? 'Gezegensel hareketler senin yaşam döngünle uyum halinde.' :
+'Evrenin bu benzersiz manzarası senin özel yolculuğunu simgeliyor.'} 
+
+${formData.sosyal_medya ? `💬 Sosyal Medya Enerji Analizi:
+Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yoğun düşünce akışı ve derinlemesine introspeksiyon' : formData.sosyal_medya.includes('mutlu') || formData.sosyal_medya.includes('güzel') ? 'Pozitif ve iyimser bir ruh hali' : 'Sakin ve düşünceli bir dönem'}
+
+` : ''}🌟 Kozmik Sonuç:
+NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir mesaj veriyor: Evren seninle aynı frekansta titreşiyor! ✨`;
+
+        setResult(enhancedReading);
       } else {
-        console.log('Real API mode, calling OpenAI...');
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o',
-            messages: [{
-              role: 'user',
-              content: `Sen AstroMind adında bir astroloji uzmanı yapay zekâsısın. Kullanıcının adı, doğum tarihi, saati ve yeriyle birlikte ona haftalık detaylı astro rehberlik sunuyorsun.
-
-Bilgiler:
-Ad: ${formData.ad}
-Doğum tarihi: ${formData.dogum_tarihi}
-Saat: ${formData.saat}
-Yer: ${formData.yer}
-Sosyal medya paylaşımları: ${formData.sosyal_medya || 'Belirtilmedi'}
-
-Yanıtta:
-- Güneş, Ay ve Yükselen burçlarını tahmin et (tahmini yaz, tam astro harita olmasa da)
-- Haftalık enerjilerden bahset
-- Eğer sosyal medya yazısı varsa, yazılardan duygusal ton ve ruh halini çıkar
-- Kullanıcıya tavsiyeler ver
-- Duygusal ve ilham verici bir dil kullan
-- En fazla 250 kelime yaz
-- Türkçe yaz
-
-Yanıt formatı:
-
-✨ ${formData.ad} için Haftalık Astro Rehber:
-
-☀️ Güneş Burcu: [tahmin]
-🌙 Ay Burcu: [tahmin]
-⬆️ Yükselen Burcu: [tahmin]
-
-🔮 Genel Enerji:
-[Kişisel haftalık yorum]
-
-${formData.sosyal_medya ? '💬 Sosyal Medya Ruh Hali:\n[Sosyal medya analizi]\n\n' : ''}🧭 Tavsiyeler:
-- [madde 1]
-- [madde 2]
-
-🌌 Mesajın:
-[Kısa kapanış cümlesi]`
-            }],
-            max_tokens: 500,
-            temperature: 0.7
-          })
-        });
-
-        const data = await response.json();
-        console.log('OpenAI response:', data);
-        setResult(data.choices[0].message.content);
+        setResult('NASA verisi alınırken bir hata oluştu. Lütfen tekrar deneyin.');
       }
     } catch (error) {
-      console.error('Error:', error);
-      if (demoMode) {
-        const fallbackResult = getDemoResponse(formData.ad);
-        console.log('Using fallback demo result:', fallbackResult);
-        setResult(fallbackResult);
-      } else {
-        setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
-      }
+      console.error('Error in Premium:', error);
+      setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);
-      console.log('Form submission completed');
+      console.log('Premium form submission completed');
     }
   };
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    console.log(`Field ${field} changed to:`, e.target.value);
+    console.log(`Premium field ${field} changed to:`, e.target.value);
     setFormData(prev => ({
       ...prev,
       [field]: e.target.value
     }));
-  };
-
-  const toggleDemoMode = () => {
-    console.log('Demo mode toggle clicked, current state:', demoMode);
-    setDemoMode(prev => {
-      const newValue = !prev;
-      console.log('Demo mode changed to:', newValue);
-      return newValue;
-    });
   };
 
   return (
@@ -185,43 +136,22 @@ ${formData.sosyal_medya ? '💬 Sosyal Medya Ruh Hali:\n[Sosyal medya analizi]\n
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
-              ⭐ Premium
+              ⭐ Premium NASA Entegreli Rehber
             </h1>
           </div>
-
-          {/* Demo Mode Toggle */}
-          <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl mb-6">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-purple-200">Demo Modu</h3>
-                  <p className="text-sm text-gray-400">AI API anahtarı olmadan örnek yanıt göster</p>
-                </div>
-                <Button
-                  onClick={toggleDemoMode}
-                  variant={demoMode ? "default" : "outline"}
-                  className={demoMode ? "bg-green-600 hover:bg-green-700" : "border-purple-400 text-purple-200 hover:bg-purple-400/10"}
-                >
-                  {demoMode ? "Demo Aktif" : "Demo Kapalı"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
 
           <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl mb-6">
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-semibold text-purple-200 mb-2">
-                  🌟 Haftalık Astro Rehber
+                  🔭 NASA Yıldız Haritası + AI Astroloji
                 </h2>
                 <p className="text-gray-400">
-                  Detaylı haftalık astroloji yorumun için bilgilerini gir
+                  Bugünkü gökyüzü görselini analiz ederek haftalık astroloji rehberin
                 </p>
-                {demoMode && (
-                  <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
-                    <span className="text-green-300 text-sm">🎭 Demo Modu Aktif</span>
-                  </div>
-                )}
+                <div className="mt-2 px-3 py-1 bg-purple-600/20 border border-purple-500/30 rounded-full inline-block">
+                  <span className="text-purple-300 text-sm">🤖 Mixtral-8x7b AI + 🛸 NASA API</span>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -313,12 +243,48 @@ ${formData.sosyal_medya ? '💬 Sosyal Medya Ruh Hali:\n[Sosyal medya analizi]\n
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? (demoMode ? '🎭 Demo Rehber Hazırlanıyor...' : '🔮 Haftalık Rehber Hazırlanıyor...') : '⭐ Haftalık Rehberimi Al'}
+                    {isLoading ? '🛸 NASA Yıldız Haritası + AI Analiz Hazırlanıyor...' : '🌌 NASA Entegreli Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
             </CardContent>
           </Card>
+
+          {/* NASA Image Display */}
+          {nasaImage && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-6"
+            >
+              <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold text-purple-200 mb-4 text-center">
+                    🛸 Bugünkü NASA Yıldız Haritası
+                  </h3>
+                  <div className="text-center">
+                    <img 
+                      src={nasaImage.url} 
+                      alt={nasaImage.title}
+                      className="w-full max-w-md mx-auto rounded-lg shadow-lg mb-4"
+                      style={{ maxHeight: '300px', objectFit: 'cover' }}
+                    />
+                    <h4 className="text-lg font-medium text-yellow-300 mb-2">{nasaImage.title}</h4>
+                    <p className="text-gray-300 text-sm">{nasaImage.date}</p>
+                    <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
+                      <h5 className="text-purple-200 font-medium mb-2">NASA Açıklaması:</h5>
+                      <p className="text-gray-300 text-sm leading-relaxed">
+                        {nasaImage.explanation.length > 300 
+                          ? `${nasaImage.explanation.substring(0, 300)}...` 
+                          : nasaImage.explanation}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           {/* Results */}
           {result && (
@@ -330,14 +296,12 @@ ${formData.sosyal_medya ? '💬 Sosyal Medya Ruh Hali:\n[Sosyal medya analizi]\n
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl">
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-semibold text-purple-200 mb-2">
-                      🌟 Haftalık Astro Rehberin
+                    <h3 className="text-2xl font-semibent text-purple-200 mb-2">
+                      🛸 NASA Entegreli Haftalık Rehberin
                     </h3>
-                    {demoMode && (
-                      <div className="mt-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full inline-block">
-                        <span className="text-blue-300 text-sm">🎭 Bu bir demo yanıttır</span>
-                      </div>
-                    )}
+                    <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
+                      <span className="text-green-300 text-sm">🤖 Mixtral-8x7b AI + 🛸 NASA Fusion</span>
+                    </div>
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">
                     {result}
