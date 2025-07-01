@@ -1,4 +1,5 @@
 
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -24,27 +25,29 @@ serve(async (req) => {
       throw new Error('Birth data is incomplete');
     }
 
-    // Create a detailed prompt for Turkish astrology reading
-    const prompt = `Sen Türkiye'nin en ünlü astroloğusun. Aşağıdaki kişi için detaylı, kişisel ve bugüne özel bir astroloji analizi hazırla:
+    // Çok daha detaylı ve profesyonel astroloji analizi için gelişmiş prompt
+    const prompt = `Sen Türkiye'nin en yetenekli ve ünlü astroloğusun. Senin analizlerin çok detaylı, kişisel ve profesyonel. Aşağıdaki kişi için çok özel, detaylı ve bugün için personalize edilmiş bir astroloji analizi hazırla:
 
 İsim: ${birthData.fullName}
 Doğum Tarihi: ${birthData.birthDate}
 Doğum Saati: ${birthData.birthTime}
 Doğum Yeri: ${birthData.birthCity}, ${birthData.birthCountry}
 
+ÖNEMLI: Çok detaylı, profesyonel ve kişisel bir analiz yap. En az 400 kelime olmalı.
+
 Lütfen şu formatta yanıt ver:
 
-**Güneş Burcu**: [Burç adı]
-**Ay Burcu**: [Ay burcu tahmini]
-**Yükselen Burcu**: [Yükselen burcu tahmini]
+**Güneş Burcu**: [Burç adı - doğum tarihinden hesapla]
+**Ay Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre]
+**Yükselen Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre]
 
 **Bugünün Astrolojik Analizi**:
-[Uzun ve detaylı günlük astroloji yorumu - en az 200 kelime. Kişinin adını kullan, bugünün tarihini dahil et, gezegen hareketlerinden bahset, özel öneriler ver]
+[Çok uzun, detaylı ve kişisel günlük astroloji yorumu. Kişinin adını sık kullan, ${new Date().toLocaleDateString('tr-TR')} tarihini vurgula, gezegen hareketlerinden bahset, doğum yerinin enerjisini dahil et, doğum saatinin önemini belirt, bu haftaki özel öneriler ver, kişisel gelişim tavsiyeleri ekle, ilişkiler hakkında yorumlar yap, kariyer ve para konularında rehberlik ver. En az 400 kelime olmalı.]
 
 **Evrenin Sana Mesajı**:
-[İlham verici ve akılda kalıcı bir mesaj - 1-2 cümle]
+[Çok ilham verici, kişisel ve akılda kalıcı bir mesaj - 2-3 cümle, kişinin adını kullan]
 
-Tüm metin Türkçe olmalı ve kişisel, sıcak bir ton kullan. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu analizi yaparken dikkate al.`;
+Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel ama samimi ol. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu sürekli vurgula.`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -52,14 +55,14 @@ Tüm metin Türkçe olmalı ve kişisel, sıcak bir ton kullan. Bugünün tarihi
         'Authorization': `Bearer ${openRouterApiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://astromind.lovable.app',
-        'X-Title': 'AstroMind AI Astrology'
+        'X-Title': 'AstroMind AI Astrology Premium'
       },
       body: JSON.stringify({
         model: 'mistralai/mixtral-8x7b-instruct',
         messages: [
           {
             role: 'system',
-            content: 'Sen Türkiye\'nin en yetenekli astroloğusun. Detaylı, kişisel ve doğru astroloji analizleri yaparsın. Her zaman Türkçe yanıt verirsin ve samimi bir dil kullanırsın.'
+            content: 'Sen Türkiye\'nin en yetenekli ve ünlü astroloğusun. Analizlerin çok detaylı, kişisel, profesyonel ve doğru. Her zaman Türkçe yanıt verirsin ve çok samimi, sıcak bir dil kullanırsın. İnsanları adlarıyla çağırır, onlara özel hissettirirsin.'
           },
           {
             role: 'user',
@@ -67,7 +70,7 @@ Tüm metin Türkçe olmalı ve kişisel, sıcak bir ton kullan. Bugünün tarihi
           }
         ],
         temperature: 0.8,
-        max_tokens: 1500,
+        max_tokens: 2000,
       }),
     });
 
@@ -80,7 +83,7 @@ Tüm metin Türkçe olmalı ve kişisel, sıcak bir ton kullan. Bugünün tarihi
     const data = await response.json();
     const aiReading = data.choices[0].message.content;
 
-    console.log('AI Reading generated successfully with Mixtral-8x7b-instruct');
+    console.log('Enhanced AI Reading generated successfully with Mixtral-8x7b-instruct');
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -101,3 +104,4 @@ Tüm metin Türkçe olmalı ve kişisel, sıcak bir ton kullan. Bugünün tarihi
     });
   }
 });
+

@@ -18,6 +18,7 @@ const PremiumYorum = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [nasaImage, setNasaImage] = useState<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,81 +30,54 @@ const PremiumYorum = () => {
       const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
       const nasaData = await nasaResponse.json();
       console.log('NASA data received:', nasaData);
+      setNasaImage(nasaData);
       
-      console.log('Calling OpenRouter Mixtral-8x7b with NASA data...');
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      console.log('Calling Supabase edge function with NASA data...');
+      const response = await fetch('https://cmqeosfptaxtctbzjulp.supabase.co/functions/v1/generate-astrology-reading', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'AstroMind Premium'
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWVvc2ZwdGF4dGN0YnpqdWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjE1NzEsImV4cCI6MjA2NjQ5NzU3MX0.tilAXTWWhABfVfS5RCMnKYd8gfVR5bCHIBawilEuOMc`,
         },
         body: JSON.stringify({
-          model: 'mistralai/mixtral-8x7b-instruct',
-          messages: [{
-            role: 'user',
-            content: `Sen AstroMind adında bir yapay zekâlı astrologsun. Kullanıcının doğum bilgileriyle birlikte NASA'nın bugünkü gökyüzü görselini ve varsa sosyal medya yazılarını da analiz ederek ona özel bir haftalık astroloji rehberi hazırlıyorsun.
-
-Kullanıcı bilgileri:
-- Ad: ${formData.ad}
-- Doğum Tarihi: ${formData.dogum_tarihi}
-- Saat: ${formData.saat}
-- Yer: ${formData.yer}
-
-Bugünkü yıldız görseli: ${nasaData.title}
-NASA açıklaması: ${nasaData.explanation}
-
-Kullanıcının sosyal medya yazıları (isteğe bağlı): ${formData.sosyal_medya || 'Belirtilmedi'}
-
-Görevin:
-1. Güneş, Ay ve Yükselen burçlarını yaklaşık tahmin et  
-2. NASA görselinden sembolik bir çıkarım yap (örneğin: galaksi genişliyorsa → içsel büyüme teması)  
-3. Yükselen burca özel karakter analizi ve bu haftaya etkisi  
-4. Eğer kullanıcı sosyal medya yazısı girdiyse:
-   - Yazılardan duygusal ton, zihinsel odak ve ruh halini çıkar
-   - Astrolojik tavsiyeleri bu kişisel veriye göre uyarla
-5. 3 maddelik tavsiye ver  
-6. Kısa pozitif kapanış mesajı yaz
-
-Türkçe, pozitif ve sezgisel bir ton kullan. 250 kelimeyi geçmesin.
-
-Yanıt formatı:
-
-✨ ${formData.ad} için Haftalık Astro Rehber:
-
-☀️ Güneş Burcu: [tahmin]  
-🌙 Ay Burcu: [tahmin]  
-⬆️ Yükselen Burcu: [tahmin]
-
-🔭 Bugünkü Gökyüzü Enerjisi:  
-${nasaData.title} → [sembolik anlam]
-
-🌟 Yükselen Burç Etkisi:  
-[Yükselen burca özel kişilik + haftalık etkisi]
-
-💬 Sosyal Medya Ruh Hali (varsa):  
-[Eğer sosyal medya yazısı varsa analiz yap]
-
-🔮 Genel Enerji:  
-[Kişisel haftalık yorum]
-
-🧭 Tavsiyeler:  
-- [1]  
-- [2]  
-- [3]
-
-🌌 Mesajın:  
-[Kısa pozitif kapanış]`
-          }],
-          max_tokens: 800,
-          temperature: 0.7
+          birthData: {
+            fullName: formData.ad,
+            birthDate: formData.dogum_tarihi,
+            birthTime: formData.saat,
+            birthCity: formData.yer,
+            birthCountry: 'Türkiye'
+          }
         })
       });
 
       const data = await response.json();
-      console.log('Mixtral-8x7b response received:', data);
-      setResult(data.choices[0].message.content);
+      console.log('Supabase edge function response received:', data);
+      
+      if (data.success) {
+        // NASA entegreli analizi formatla
+        const enhancedReading = `✨ ${formData.ad} için NASA Entegreli Kozmik Rehber:
+
+🌌 Bugünkü Gökyüzü Enerjisi:
+"${nasaData.title}" - ${nasaData.explanation.substring(0, 200)}...
+
+${data.reading}
+
+🔭 NASA Kozmik Mesajı:
+Bu gökyüzü karesi evrenin sana gönderdiği özel bir işaret. ${nasaData.title.toLowerCase().includes('galaxy') ? 'Galaksinin genişleme enerjisi senin de içsel büyümene rehberlik ediyor.' : 
+nasaData.title.toLowerCase().includes('star') ? 'Yıldızların ışığı senin yolunu aydınlatmak için yanıyor.' :
+nasaData.title.toLowerCase().includes('planet') ? 'Gezegensel hareketler senin yaşam döngünle uyum halinde.' :
+'Evrenin bu benzersiz manzarası senin özel yolculuğunu simgeliyor.'} 
+
+${formData.sosyal_medya ? `💬 Sosyal Medya Enerji Analizi:
+Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yoğun düşünce akışı ve derinlemesine introspeksiyon' : formData.sosyal_medya.includes('mutlu') || formData.sosyal_medya.includes('güzel') ? 'Pozitif ve iyimser bir ruh hali' : 'Sakin ve düşünceli bir dönem'}
+
+` : ''}🌟 Kozmik Sonuç:
+NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir mesaj veriyor: Evren seninle aynı frekansta titreşiyor! ✨`;
+
+        setResult(enhancedReading);
+      } else {
+        setResult('NASA verisi alınırken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
     } catch (error) {
       console.error('Error in PremiumYorum:', error);
       setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
@@ -162,7 +136,7 @@ ${nasaData.title} → [sembolik anlam]
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
-              ⭐ Premium Yorum
+              ⭐ Premium NASA Kozmik Rehber
             </h1>
           </div>
 
@@ -170,13 +144,13 @@ ${nasaData.title} → [sembolik anlam]
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-semibold text-purple-200 mb-2">
-                  🔭 NASA Entegreli Haftalık Astro Rehber
+                  🔭 NASA Yıldız Haritası + AI Astroloji
                 </h2>
                 <p className="text-gray-400">
-                  Bugünkü gökyüzü enerjisiyle birleşen kişisel astroloji yorumun
+                  Bugünkü gökyüzü görselini analiz ederek kişisel astroloji yorumun
                 </p>
                 <div className="mt-2 px-3 py-1 bg-purple-600/20 border border-purple-500/30 rounded-full inline-block">
-                  <span className="text-purple-300 text-sm">🤖 Mixtral-8x7b AI ile Güçlendirildi</span>
+                  <span className="text-purple-300 text-sm">🤖 Mixtral-8x7b AI + 🛸 NASA API</span>
                 </div>
               </div>
 
@@ -262,19 +236,47 @@ ${nasaData.title} → [sembolik anlam]
 
                 <motion.div
                   whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  whileTrap={{ scale: isLoading ? 1 : 0.98 }}
                 >
                   <Button
                     type="submit"
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? '🤖 Mixtral AI ile NASA & Astro Rehber Hazırlanıyor...' : '🌌 Kozmik Astro Rehberimi Al'}
+                    {isLoading ? '🛸 NASA Yıldız Haritası + AI Analiz Hazırlanıyor...' : '🌌 Kozmik NASA Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
             </CardContent>
           </Card>
+
+          {/* NASA Image Display */}
+          {nasaImage && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-6"
+            >
+              <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold text-purple-200 mb-4 text-center">
+                    🛸 Bugünkü NASA Yıldız Haritası
+                  </h3>
+                  <div className="text-center">
+                    <img 
+                      src={nasaImage.url} 
+                      alt={nasaImage.title}
+                      className="w-full max-w-md mx-auto rounded-lg shadow-lg mb-4"
+                      style={{ maxHeight: '300px', objectFit: 'cover' }}
+                    />
+                    <h4 className="text-lg font-medium text-yellow-300 mb-2">{nasaImage.title}</h4>
+                    <p className="text-gray-300 text-sm">{nasaImage.date}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           {/* Results */}
           {result && (
@@ -287,10 +289,10 @@ ${nasaData.title} → [sembolik anlam]
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-semibold text-purple-200 mb-2">
-                      🔭 NASA Entegreli Astro Rehberin
+                      🛸 NASA Entegreli Kozmik Rehberin
                     </h3>
                     <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
-                      <span className="text-green-300 text-sm">🤖 Mixtral-8x7b AI Yanıtı</span>
+                      <span className="text-green-300 text-sm">🤖 Mixtral-8x7b AI + 🛸 NASA Fusion</span>
                     </div>
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">
