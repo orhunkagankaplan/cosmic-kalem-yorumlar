@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -236,7 +235,7 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
 
                 <motion.div
                   whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                  whileTrap={{ scale: isLoading ? 1 : 0.98 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
                 >
                   <Button
                     type="submit"
@@ -272,6 +271,14 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
                     />
                     <h4 className="text-lg font-medium text-yellow-300 mb-2">{nasaImage.title}</h4>
                     <p className="text-gray-300 text-sm">{nasaImage.date}</p>
+                    <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
+                      <h5 className="text-purple-200 font-medium mb-2">NASA Açıklaması:</h5>
+                      <p className="text-gray-300 text-sm leading-relaxed">
+                        {nasaImage.explanation.length > 300 
+                          ? `${nasaImage.explanation.substring(0, 300)}...` 
+                          : nasaImage.explanation}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
