@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProkeralaAstrologyData } from '@/utils/prokeralaService';
 import { translateAndAnalyzeProkeralaData } from '@/utils/prokeralaTranslationService';
@@ -20,12 +20,15 @@ const Premium = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [error, setError] = useState('');
   const [prokeralaData, setProkeralaData] = useState<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Premium form submitted with data:', formData);
     setIsLoading(true);
+    setError('');
+    setResult('');
     
     try {
       console.log('Fetching Prokerala astrology data...');
@@ -64,11 +67,12 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
 
         setResult(enhancedReading);
       } else {
-        setResult('Prokerala astroloji verisi alınırken bir hata oluştu. Lütfen tekrar deneyin.');
+        setError('Prokerala astroloji verisi alınamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in Premium:', error);
-      setResult('Bir hata oluştu. Lütfen tekrar deneyin.');
+      const errorMessage = error.message || 'Bilinmeyen bir hata oluştu.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
       console.log('Premium form submission completed');
@@ -141,6 +145,22 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
                   <span className="text-purple-300 text-sm">🤖 Mixtral-8x7b AI + 🔮 Prokerala API</span>
                 </div>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg flex items-start">
+                  <AlertCircle className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-red-300 font-medium mb-1">Hata</h4>
+                    <p className="text-red-200 text-sm">{error}</p>
+                    {error.includes('API key') && (
+                      <p className="text-red-200 text-xs mt-2">
+                        Prokerala API key'inizi Supabase ayarlarında kontrol edin.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
