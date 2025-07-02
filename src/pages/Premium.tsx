@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { translateNasaContent } from '@/utils/translationService';
+import { getProkeralaAstrologyData } from '@/utils/prokeralaService';
+import { translateAndAnalyzeProkeralaData } from '@/utils/prokeralaTranslationService';
 
 const Premium = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +20,7 @@ const Premium = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
-  const [nasaImage, setNasaImage] = useState<any>(null);
+  const [prokeralaData, setProkeralaData] = useState<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,68 +28,43 @@ const Premium = () => {
     setIsLoading(true);
     
     try {
-      console.log('Fetching NASA APOD...');
-      const nasaResponse = await fetch('https://api.nasa.gov/planetary/apod?api_key=cPQ26NgOmbQZh5Tk1uZh3DDqVd7n6iVivZH9mhGy');
-      const nasaData = await nasaResponse.json();
-      console.log('NASA data received:', nasaData);
+      console.log('Fetching Prokerala astrology data...');
+      const prokeralaResult = await getProkeralaAstrologyData(
+        formData.ad,
+        formData.dogum_tarihi,
+        formData.saat,
+        formData.yer
+      );
       
-      // Translate NASA content to Turkish
-      console.log('Translating NASA content to Turkish...');
-      const translatedContent = await translateNasaContent(nasaData.title, nasaData.explanation);
-      
-      const translatedNasaData = {
-        ...nasaData,
-        title: translatedContent.title,
-        explanation: translatedContent.explanation
-      };
-      
-      setNasaImage(translatedNasaData);
-      
-      console.log('Calling Supabase edge function with NASA data...');
-      const response = await fetch('https://cmqeosfptaxtctbzjulp.supabase.co/functions/v1/generate-astrology-reading', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWVvc2ZwdGF4dGN0YnpqdWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjE1NzEsImV4cCI6MjA2NjQ5NzU3MX0.tilAXTWWhABfVfS5RCMnKYd8gfVR5bCHIBawilEuOMc`,
-        },
-        body: JSON.stringify({
-          birthData: {
+      if (prokeralaResult) {
+        console.log('Prokerala data received:', prokeralaResult);
+        setProkeralaData(prokeralaResult);
+        
+        console.log('Sending to AI for Turkish analysis...');
+        const analysisResult = await translateAndAnalyzeProkeralaData(
+          prokeralaResult,
+          {
             fullName: formData.ad,
             birthDate: formData.dogum_tarihi,
             birthTime: formData.saat,
-            birthCity: formData.yer,
-            birthCountry: 'Türkiye'
+            birthCity: formData.yer
           }
-        })
-      });
+        );
+        
+        // Enhanced reading with social media analysis if provided
+        const enhancedReading = `✨ ${formData.ad} için Prokerala Gerçek Astroloji Rehberi:
 
-      const data = await response.json();
-      console.log('Supabase edge function response received:', data);
-      
-      if (data.success) {
-        // NASA entegreli analizi formatla (now with Turkish content)
-        const enhancedReading = `✨ ${formData.ad} için NASA Entegreli Haftalık Astro Rehber:
-
-🌌 Bugünkü Gökyüzü Enerjisi:
-"${translatedNasaData.title}" - ${translatedNasaData.explanation.substring(0, 200)}...
-
-${data.reading}
-
-🔭 NASA Kozmik Mesajı:
-Bu gökyüzü karesi evrenin sana gönderdiği özel bir işaret. ${translatedNasaData.title.toLowerCase().includes('galaksi') ? 'Galaksinin genişleme enerjisi senin de içsel büyümene rehberlik ediyor.' : 
-translatedNasaData.title.toLowerCase().includes('yıldız') ? 'Yıldızların ışığı senin yolunu aydınlatmak için yanıyor.' :
-translatedNasaData.title.toLowerCase().includes('gezegen') ? 'Gezegensel hareketler senin yaşam döngünle uyum halinde.' :
-'Evrenin bu benzersiz manzarası senin özel yolculuğunu simgeliyor.'} 
+${analysisResult}
 
 ${formData.sosyal_medya ? `💬 Sosyal Medya Enerji Analizi:
 Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yoğun düşünce akışı ve derinlemesine introspeksiyon' : formData.sosyal_medya.includes('mutlu') || formData.sosyal_medya.includes('güzel') ? 'Pozitif ve iyimser bir ruh hali' : 'Sakin ve düşünceli bir dönem'}
 
-` : ''}🌟 Kozmik Sonuç:
-NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir mesaj veriyor: Evren seninle aynı frekansta titreşiyor! ✨`;
+` : ''}🌟 Prokerala Kozmik Sonuç:
+Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı frekansta titreşiyor! ✨`;
 
         setResult(enhancedReading);
       } else {
-        setResult('NASA verisi alınırken bir hata oluştu. Lütfen tekrar deneyin.');
+        setResult('Prokerala astroloji verisi alınırken bir hata oluştu. Lütfen tekrar deneyin.');
       }
     } catch (error) {
       console.error('Error in Premium:', error);
@@ -147,7 +124,7 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
-              ⭐ Premium NASA Entegreli Rehber
+              ⭐ Premium Prokerala Gerçek Astroloji
             </h1>
           </div>
 
@@ -155,13 +132,13 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-semibold text-purple-200 mb-2">
-                  🔭 NASA Yıldız Haritası + AI Astroloji
+                  🔮 Prokerala Gerçek Astroloji + AI Yorumlama
                 </h2>
                 <p className="text-gray-400">
-                  Bugünkü gökyüzü görselini analiz ederek haftalık astroloji rehberin
+                  Gerçek astroloji verilerini AI ile yorumlayarak kişisel rehberin
                 </p>
                 <div className="mt-2 px-3 py-1 bg-purple-600/20 border border-purple-500/30 rounded-full inline-block">
-                  <span className="text-purple-300 text-sm">🤖 Mixtral-8x7b AI + 🛸 NASA API</span>
+                  <span className="text-purple-300 text-sm">🤖 Mixtral-8x7b AI + 🔮 Prokerala API</span>
                 </div>
               </div>
 
@@ -254,15 +231,15 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? '🛸 NASA Yıldız Haritası + AI Analiz Hazırlanıyor...' : '🌌 NASA Entegreli Rehberimi Al'}
+                    {isLoading ? '🔮 Prokerala Gerçek Astroloji + AI Analiz Hazırlanıyor...' : '🌌 Gerçek Astroloji Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
             </CardContent>
           </Card>
 
-          {/* NASA Image Display */}
-          {nasaImage && (
+          {/* Prokerala Data Display */}
+          {prokeralaData && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -272,25 +249,27 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-semibold text-purple-200 mb-4 text-center">
-                    🛸 Bugünkü NASA Yıldız Haritası
+                    🔮 Prokerala Gerçek Astroloji Verilerin
                   </h3>
-                  <div className="text-center">
-                    <img 
-                      src={nasaImage.url} 
-                      alt={nasaImage.title}
-                      className="w-full max-w-md mx-auto rounded-lg shadow-lg mb-4"
-                      style={{ maxHeight: '300px', objectFit: 'cover' }}
-                    />
-                    <h4 className="text-lg font-medium text-yellow-300 mb-2">{nasaImage.title}</h4>
-                    <p className="text-gray-300 text-sm">{nasaImage.date}</p>
-                    <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
-                      <h5 className="text-purple-200 font-medium mb-2">NASA Açıklaması:</h5>
-                      <p className="text-gray-300 text-sm leading-relaxed">
-                        {nasaImage.explanation.length > 300 
-                          ? `${nasaImage.explanation.substring(0, 300)}...` 
-                          : nasaImage.explanation}
-                      </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div className="p-4 bg-slate-700/30 rounded-lg">
+                      <h4 className="text-yellow-300 font-medium mb-2">☀️ Güneş Burcu</h4>
+                      <p className="text-white">{prokeralaData.sunSign}</p>
                     </div>
+                    <div className="p-4 bg-slate-700/30 rounded-lg">
+                      <h4 className="text-blue-300 font-medium mb-2">🌙 Ay Burcu</h4>
+                      <p className="text-white">{prokeralaData.moonSign}</p>
+                    </div>
+                    <div className="p-4 bg-slate-700/30 rounded-lg">
+                      <h4 className="text-green-300 font-medium mb-2">⬆️ Yükselen</h4>
+                      <p className="text-white">{prokeralaData.risingSign}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
+                    <h5 className="text-purple-200 font-medium mb-2">✨ Prokerala API Verified</h5>
+                    <p className="text-gray-300 text-sm">
+                      Bu veriler Prokerala API'den alınan gerçek astroloji hesaplamalarıdır.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -308,10 +287,10 @@ NASA'nın bugünkü keşfi ve senin doğum enerjin birleşerek sana güçlü bir
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-semibold text-purple-200 mb-2">
-                      🛸 NASA Entegreli Haftalık Rehberin
+                      🔮 Prokerala Gerçek Astroloji Rehberin
                     </h3>
                     <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
-                      <span className="text-green-300 text-sm">🤖 Mixtral-8x7b AI + 🛸 NASA Fusion</span>
+                      <span className="text-green-300 text-sm">🤖 Mixtral-8x7b AI + 🔮 Prokerala Real Data</span>
                     </div>
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">

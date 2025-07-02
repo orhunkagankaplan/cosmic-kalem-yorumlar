@@ -1,7 +1,9 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
+const prokeralaApiKey = Deno.env.get('PROKERALA_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +19,81 @@ serve(async (req) => {
   try {
     const requestBody = await req.json();
     
+    // Handle Prokerala analysis requests
+    if (requestBody.prokeralaAnalysisRequest) {
+      const { prokeralaData, birthData } = requestBody.prokeralaAnalysisRequest;
+      
+      console.log('Processing Prokerala analysis request...');
+
+      const analysisPrompt = `Sen Türkiye'nin en yetenekli astroloğusun. Aşağıdaki gerçek Prokerala astroloji verilerini kullanarak ${birthData.fullName} için çok detaylı, kişisel ve Türkçe bir astroloji analizi hazırla:
+
+İsim: ${birthData.fullName}
+Doğum Tarihi: ${birthData.birthDate}
+Doğum Saati: ${birthData.birthTime}
+Doğum Yeri: ${birthData.birthCity}
+
+PROKERALA GERçEK ASTROLOJİ VERİLERİ:
+- Güneş Burcu: ${prokeralaData.sunSign}
+- Ay Burcu: ${prokeralaData.moonSign}
+- Yükselen Burcu: ${prokeralaData.risingSign}
+- Gezegen Konumları: ${JSON.stringify(prokeralaData.planetaryPositions)}
+- Nakshatra Detayları: ${JSON.stringify(prokeralaData.nakshatraDetails)}
+
+Bu gerçek astroloji verilerini kullanarak çok detaylı, profesyonel ve kişisel bir analiz yap. En az 500 kelime olmalı.
+
+Lütfen şu formatta yanıt ver:
+
+**Gerçek Astroloji Verilerine Göre Analiz**:
+[Prokerala API'den gelen gerçek verileri kullanarak çok uzun, detaylı ve kişisel astroloji yorumu. Kişinin adını sık kullan, ${new Date().toLocaleDateString('tr-TR')} tarihini vurgula, gerçek gezegen konumlarından bahset, nakshatra etkilerini açıkla, doğum yerinin önemini belirt, bu haftaki özel öneriler ver, kişisel gelişim tavsiyeleri ekle, ilişkiler hakkında yorumlar yap, kariyer ve para konularında rehberlik ver. En az 500 kelime olmalı.]
+
+**Prokerala Verilerine Dayalı Evrenin Mesajı**:
+[Çok ilham verici, kişisel ve akılda kalıcı bir mesaj - 2-3 cümle, kişinin adını kullan]
+
+Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel ama samimi ol. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu sürekli vurgula.`;
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openRouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://astromind.lovable.app',
+          'X-Title': 'AstroMind Prokerala Analysis'
+        },
+        body: JSON.stringify({
+          model: 'mistralai/mixtral-8x7b-instruct',
+          messages: [
+            {
+              role: 'system',
+              content: 'Sen Türkiye\'nin en yetenekli ve ünlü astroloğusun. Gerçek Prokerala astroloji verilerini kullanarak çok detaylı, kişisel, profesyonel analizler yaparsın. Her zaman Türkçe yanıt verirsin ve çok samimi, sıcak bir dil kullanırsın.'
+            },
+            {
+              role: 'user',
+              content: analysisPrompt
+            }
+          ],
+          temperature: 0.8,
+          max_tokens: 2000,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Prokerala Analysis API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const aiAnalysis = data.choices[0].message.content;
+
+      console.log('Prokerala AI Analysis generated successfully');
+
+      return new Response(JSON.stringify({ 
+        success: true,
+        analysis: aiAnalysis,
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Handle translation requests
     if (requestBody.translateRequest) {
       const { title, explanation } = requestBody.translateRequest;
