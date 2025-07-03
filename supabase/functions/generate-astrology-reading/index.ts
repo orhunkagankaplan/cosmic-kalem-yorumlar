@@ -30,27 +30,23 @@ serve(async (req) => {
       const [year, month, day] = birthDate.split('-');
       const [hours, minutes] = birthTime.split(':');
       
-      const prokeralaRequestBody = {
-        ayanamsa: 1,
-        coordinates: {
-          latitude: 41.0082, // Istanbul coordinates as default
-          longitude: 28.9784
-        },
+      // Build query parameters for GET request
+      const queryParams = new URLSearchParams({
+        ayanamsa: '1',
+        coordinates: `${41.0082},${28.9784}`, // Istanbul coordinates as default
         datetime: `${year}-${month}-${day}T${hours}:${minutes}:00+03:00`,
         name: name.trim()
-      };
+      });
 
       console.log('Calling Prokerala API with credentials...');
 
       // Basic astro details API call with Client ID and Secret
-      const prokeralaResponse = await fetch('https://api.prokerala.com/v2/astrology/birth-details', {
-        method: 'POST',
+      const prokeralaResponse = await fetch(`https://api.prokerala.com/v2/astrology/birth-details?${queryParams.toString()}`, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'X-API-Key': prokeralaClientId,
           'X-API-Secret': prokeralaSecret
-        },
-        body: JSON.stringify(prokeralaRequestBody)
+        }
       });
 
       console.log('Prokerala API response status:', prokeralaResponse.status);
