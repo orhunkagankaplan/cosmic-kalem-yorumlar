@@ -44,8 +44,7 @@ serve(async (req) => {
       const prokeralaResponse = await fetch(`https://api.prokerala.com/v2/astrology/birth-details?${queryParams.toString()}`, {
         method: 'GET',
         headers: {
-          'X-API-Key': prokeralaClientId,
-          'X-API-Secret': prokeralaSecret
+          'Authorization': `Bearer ${prokeralaClientId}:${prokeralaSecret}`
         }
       });
 
