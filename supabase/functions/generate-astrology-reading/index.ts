@@ -20,71 +20,107 @@ serve(async (req) => {
   try {
     const requestBody = await req.json();
     
+    
     // Handle direct Prokerala API requests
     if (requestBody.prokeralaRequest) {
       const { name, birthDate, birthTime, birthPlace } = requestBody.prokeralaRequest;
       
       console.log('Processing direct Prokerala API request...');
 
-      // Convert birth data to required format
-      const [year, month, day] = birthDate.split('-');
-      const [hours, minutes] = birthTime.split(':');
-      
-      // Build query parameters for GET request
-      const queryParams = new URLSearchParams({
-        ayanamsa: '1',
-        coordinates: `${41.0082},${28.9784}`, // Istanbul coordinates as default
-        datetime: `${year}-${month}-${day}T${hours}:${minutes}:00+03:00`,
-        name: name.trim()
-      });
+      try {
+        // First, get the access token using client credentials flow
+        console.log('Getting Prokerala access token...');
+        
+        const tokenResponse = await fetch('https://api.prokerala.com/oauth/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            'grant_type': 'client_credentials',
+            'client_id': prokeralaClientId,
+            'client_secret': prokeralaSecret
+          })
+        });
 
-      console.log('Calling Prokerala API with credentials...');
-
-      // Basic astro details API call with Client ID and Secret
-      const prokeralaResponse = await fetch(`https://api.prokerala.com/v2/astrology/birth-details?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: {
-          'X-API-Key': prokeralaClientId,
-          'X-API-Secret': prokeralaSecret
+        if (!tokenResponse.ok) {
+          const tokenError = await tokenResponse.text();
+          console.error('Token request failed:', tokenError);
+          throw new Error(`Token request failed: ${tokenResponse.status} - ${tokenError}`);
         }
-      });
 
-      console.log('Prokerala API response status:', prokeralaResponse.status);
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
+        
+        if (!accessToken) {
+          throw new Error('No access token received from Prokerala');
+        }
 
-      if (!prokeralaResponse.ok) {
-        const errorText = await prokeralaResponse.text();
-        console.error('Prokerala API error response:', errorText);
-        throw new Error(`Prokerala API hatası: ${prokeralaResponse.status} - ${errorText}`);
+        console.log('Access token received successfully');
+
+        // Convert birth data to required format
+        const [year, month, day] = birthDate.split('-');
+        const [hours, minutes] = birthTime.split(':');
+        
+        // Build query parameters for GET request
+        const queryParams = new URLSearchParams({
+          ayanamsa: '1',
+          coordinates: `${41.0082},${28.9784}`, // Istanbul coordinates as default
+          datetime: `${year}-${month}-${day}T${hours}:${minutes}:00+03:00`,
+          name: name.trim()
+        });
+
+        console.log('Calling Prokerala API with access token...');
+
+        // Basic astro details API call with Bearer token
+        const prokeralaResponse = await fetch(`https://api.prokerala.com/v2/astrology/birth-details?${queryParams.toString()}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        console.log('Prokerala API response status:', prokeralaResponse.status);
+
+        if (!prokeralaResponse.ok) {
+          const errorText = await prokeralaResponse.text();
+          console.error('Prokerala API error response:', errorText);
+          throw new Error(`Prokerala API hatası: ${prokeralaResponse.status} - ${errorText}`);
+        }
+
+        const prokeralaData = await prokeralaResponse.json();
+        console.log('Prokerala data received:', prokeralaData);
+
+        // Check if response has data
+        if (!prokeralaData.data) {
+          console.error('Prokerala API response missing data field');
+          throw new Error('Prokerala API\'den geçersiz yanıt alındı');
+        }
+
+        // Extract and format astrology information
+        const data = prokeralaData.data;
+        
+        const formattedData = {
+          sunSign: data.sun_sign || 'Bilinmiyor',
+          moonSign: data.moon_sign || 'Bilinmiyor', 
+          risingSign: data.ascendant || 'Bilinmiyor',
+          planetaryPositions: data.planets || {},
+          nakshatraDetails: data.nakshatra || {},
+          basicAstroDetails: data
+        };
+
+        return new Response(JSON.stringify({ 
+          success: true,
+          prokeralaData: formattedData,
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      } catch (error) {
+        console.error('Prokerala API request failed:', error);
+        throw error;
       }
-
-      const prokeralaData = await prokeralaResponse.json();
-      console.log('Prokerala data received:', prokeralaData);
-
-      // Check if response has data
-      if (!prokeralaData.data) {
-        console.error('Prokerala API response missing data field');
-        throw new Error('Prokerala API\'den geçersiz yanıt alındı');
-      }
-
-      // Extract and format astrology information
-      const data = prokeralaData.data;
-      
-      const formattedData = {
-        sunSign: data.sun_sign || 'Bilinmiyor',
-        moonSign: data.moon_sign || 'Bilinmiyor', 
-        risingSign: data.ascendant || 'Bilinmiyor',
-        planetaryPositions: data.planets || {},
-        nakshatraDetails: data.nakshatra || {},
-        basicAstroDetails: data
-      };
-
-      return new Response(JSON.stringify({ 
-        success: true,
-        prokeralaData: formattedData,
-        timestamp: new Date().toISOString()
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
     }
 
     // Handle Prokerala analysis requests
