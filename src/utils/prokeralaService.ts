@@ -15,69 +15,38 @@ export const getProkeralaAstrologyData = async (
   birthPlace: string
 ): Promise<ProkeralaAstrologyData | null> => {
   try {
-    console.log('Fetching Prokerala astrology data...');
+    console.log('Calling Supabase edge function for Prokerala data...');
     
-    // API key kontrolü
-    const apiKey = import.meta.env.VITE_PROKERALA_API_KEY;
-    if (!apiKey || apiKey === 'demo-key') {
-      console.error('Prokerala API key not found or is demo key');
-      throw new Error('Prokerala API key gerekli. Lütfen API key\'inizi ayarlayın.');
-    }
-    
-    // Convert birth data to required format
-    const [year, month, day] = birthDate.split('-');
-    const [hours, minutes] = birthTime.split(':');
-    
-    const requestBody = {
-      ayanamsa: 1,
-      coordinates: {
-        latitude: 41.0082, // Istanbul coordinates as default
-        longitude: 28.9784
-      },
-      datetime: `${year}-${month}-${day}T${hours}:${minutes}:00+03:00`,
-      name: name.trim()
-    };
-
-    console.log('Prokerala API request:', requestBody);
-
-    // Basic astro details API call
-    const basicDetailsResponse = await fetch('https://api.prokerala.com/v2/astrology/basic-astro-details', {
+    // Call edge function which will handle Prokerala API with Client ID and Secret
+    const response = await fetch('https://cmqeosfptaxtctbzjulp.supabase.co/functions/v1/generate-astrology-reading', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWVvc2ZwdGF4dGN0YnpqdWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjE1NzEsImV4cCI6MjA2NjQ5NzU3MX0.tilAXTWWhABfVfS5RCMnKYd8gfVR5bCHIBawilEuOMc`,
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        prokeralaRequest: {
+          name: name.trim(),
+          birthDate,
+          birthTime,
+          birthPlace
+        }
+      })
     });
 
-    console.log('Prokerala API response status:', basicDetailsResponse.status);
-
-    if (!basicDetailsResponse.ok) {
-      const errorText = await basicDetailsResponse.text();
-      console.error('Prokerala API error response:', errorText);
-      throw new Error(`Prokerala API hatası: ${basicDetailsResponse.status} - ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Edge function error:', errorText);
+      throw new Error(`Prokerala API hatası: ${response.status} - ${errorText}`);
     }
 
-    const basicData = await basicDetailsResponse.json();
-    console.log('Prokerala basic data received:', basicData);
-
-    // Check if response has data
-    if (!basicData.data) {
-      console.error('Prokerala API response missing data field');
-      throw new Error('Prokerala API\'den geçersiz yanıt alındı');
-    }
-
-    // Extract astrology information
-    const data = basicData.data;
+    const data = await response.json();
     
-    return {
-      sunSign: data.sun_sign || 'Bilinmiyor',
-      moonSign: data.moon_sign || 'Bilinmiyor', 
-      risingSign: data.ascendant || 'Bilinmiyor',
-      planetaryPositions: data.planets || {},
-      nakshatraDetails: data.nakshatra || {},
-      basicAstroDetails: data
-    };
+    if (!data.success || !data.prokeralaData) {
+      throw new Error(data.error || 'Prokerala verisi alınamadı');
+    }
+
+    return data.prokeralaData;
 
   } catch (error) {
     console.error('Error fetching Prokerala data:', error);

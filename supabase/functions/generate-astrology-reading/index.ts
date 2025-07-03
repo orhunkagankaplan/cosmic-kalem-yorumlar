@@ -3,7 +3,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
-const prokeralaApiKey = Deno.env.get('PROKERALA_API_KEY');
+const prokeralaClientId = '7c564c4a-5f3f-4272-b2eb-c46bfdc004db';
+const prokeralaSecret = 'F5EKE8aVeA1BXZWHnR9QkJb7PRit9WeGyzLxO9nD';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,6 +20,77 @@ serve(async (req) => {
   try {
     const requestBody = await req.json();
     
+    // Handle direct Prokerala API requests
+    if (requestBody.prokeralaRequest) {
+      const { name, birthDate, birthTime, birthPlace } = requestBody.prokeralaRequest;
+      
+      console.log('Processing direct Prokerala API request...');
+
+      // Convert birth data to required format
+      const [year, month, day] = birthDate.split('-');
+      const [hours, minutes] = birthTime.split(':');
+      
+      const prokeralaRequestBody = {
+        ayanamsa: 1,
+        coordinates: {
+          latitude: 41.0082, // Istanbul coordinates as default
+          longitude: 28.9784
+        },
+        datetime: `${year}-${month}-${day}T${hours}:${minutes}:00+03:00`,
+        name: name.trim()
+      };
+
+      console.log('Calling Prokerala API with credentials...');
+
+      // Basic astro details API call with Client ID and Secret
+      const prokeralaResponse = await fetch('https://api.prokerala.com/v2/astrology/basic-astro-details', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': prokeralaClientId,
+          'X-API-Secret': prokeralaSecret
+        },
+        body: JSON.stringify(prokeralaRequestBody)
+      });
+
+      console.log('Prokerala API response status:', prokeralaResponse.status);
+
+      if (!prokeralaResponse.ok) {
+        const errorText = await prokeralaResponse.text();
+        console.error('Prokerala API error response:', errorText);
+        throw new Error(`Prokerala API hatası: ${prokeralaResponse.status} - ${errorText}`);
+      }
+
+      const prokeralaData = await prokeralaResponse.json();
+      console.log('Prokerala data received:', prokeralaData);
+
+      // Check if response has data
+      if (!prokeralaData.data) {
+        console.error('Prokerala API response missing data field');
+        throw new Error('Prokerala API\'den geçersiz yanıt alındı');
+      }
+
+      // Extract and format astrology information
+      const data = prokeralaData.data;
+      
+      const formattedData = {
+        sunSign: data.sun_sign || 'Bilinmiyor',
+        moonSign: data.moon_sign || 'Bilinmiyor', 
+        risingSign: data.ascendant || 'Bilinmiyor',
+        planetaryPositions: data.planets || {},
+        nakshatraDetails: data.nakshatra || {},
+        basicAstroDetails: data
+      };
+
+      return new Response(JSON.stringify({ 
+        success: true,
+        prokeralaData: formattedData,
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Handle Prokerala analysis requests
     if (requestBody.prokeralaAnalysisRequest) {
       const { prokeralaData, birthData } = requestBody.prokeralaAnalysisRequest;
