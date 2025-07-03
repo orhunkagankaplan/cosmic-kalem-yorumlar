@@ -43,7 +43,7 @@ serve(async (req) => {
       console.log('Calling Prokerala API with credentials...');
 
       // Basic astro details API call with Client ID and Secret
-      const prokeralaResponse = await fetch('https://api.prokerala.com/v2/astrology/basic-astro-details', {
+      const prokeralaResponse = await fetch('https://api.prokerala.com/v2/astrology/birth-details', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
