@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getProkeralaAstrologyData } from '@/utils/prokeralaService';
-import { translateAndAnalyzeProkeralaData } from '@/utils/prokeralaTranslationService';
+import { getAztroAstrologyData } from '@/utils/aztroService';
+import { translateAndAnalyzeAztroData } from '@/utils/aztroTranslationService';
 
 const Premium = () => {
   const [formData, setFormData] = useState({
@@ -21,7 +21,7 @@ const Premium = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
-  const [prokeralaData, setProkeralaData] = useState<any>(null);
+  const [aztroData, setAztroData] = useState<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,21 +31,21 @@ const Premium = () => {
     setResult('');
     
     try {
-      console.log('Fetching Prokerala astrology data...');
-      const prokeralaResult = await getProkeralaAstrologyData(
+      console.log('Fetching Aztro astrology data...');
+      const aztroResult = await getAztroAstrologyData(
         formData.ad,
         formData.dogum_tarihi,
         formData.saat,
         formData.yer
       );
       
-      if (prokeralaResult) {
-        console.log('Prokerala data received:', prokeralaResult);
-        setProkeralaData(prokeralaResult);
+      if (aztroResult) {
+        console.log('Aztro data received:', aztroResult);
+        setAztroData(aztroResult);
         
-        console.log('Sending to AI for Turkish analysis...');
-        const analysisResult = await translateAndAnalyzeProkeralaData(
-          prokeralaResult,
+        console.log('Creating Turkish analysis...');
+        const analysisResult = await translateAndAnalyzeAztroData(
+          aztroResult,
           {
             fullName: formData.ad,
             birthDate: formData.dogum_tarihi,
@@ -55,19 +55,17 @@ const Premium = () => {
         );
         
         // Enhanced reading with social media analysis if provided
-        const enhancedReading = `✨ ${formData.ad} için Prokerala Gerçek Astroloji Rehberi:
-
-${analysisResult}
+        const enhancedReading = `${analysisResult}
 
 ${formData.sosyal_medya ? `💬 Sosyal Medya Enerji Analizi:
 Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yoğun düşünce akışı ve derinlemesine introspeksiyon' : formData.sosyal_medya.includes('mutlu') || formData.sosyal_medya.includes('güzel') ? 'Pozitif ve iyimser bir ruh hali' : 'Sakin ve düşünceli bir dönem'}
 
-` : ''}🌟 Prokerala Kozmik Sonuç:
-Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı frekansta titreşiyor! ✨`;
+` : ''}🌟 Aztro API Kozmik Sonuç:
+Ücretsiz ve güvenilir astroloji verilerine dayalı analizin tamamlandı! ✨`;
 
         setResult(enhancedReading);
       } else {
-        setError('Prokerala astroloji verisi alınamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
+        setError('Astroloji verisi alınamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
       }
     } catch (error: any) {
       console.error('Error in Premium:', error);
@@ -127,8 +125,8 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
                 Ana Sayfa
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
-              ⭐ Premium Prokerala Gerçek Astroloji
+                  <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
+              ⭐ Premium Aztro Ücretsiz Astroloji
             </h1>
           </div>
 
@@ -136,13 +134,13 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-semibold text-purple-200 mb-2">
-                  🔮 Prokerala Gerçek Astroloji + AI Yorumlama
+                  🔮 Aztro Ücretsiz Astroloji + AI Yorumlama
                 </h2>
                 <p className="text-gray-400">
-                  Gerçek astroloji verilerini AI ile yorumlayarak kişisel rehberin
+                  Ücretsiz astroloji verilerini AI ile yorumlayarak kişisel rehberin
                 </p>
                 <div className="mt-2 px-3 py-1 bg-purple-600/20 border border-purple-500/30 rounded-full inline-block">
-                  <span className="text-purple-300 text-sm">🤖 Mixtral-8x7b AI + 🔮 Prokerala API</span>
+                  <span className="text-purple-300 text-sm">🤖 AI Analiz + 🔮 Aztro API</span>
                 </div>
               </div>
 
@@ -153,11 +151,6 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
                   <div>
                     <h4 className="text-red-300 font-medium mb-1">Hata</h4>
                     <p className="text-red-200 text-sm">{error}</p>
-                    {error.includes('API key') && (
-                      <p className="text-red-200 text-xs mt-2">
-                        Prokerala API key'inizi Supabase ayarlarında kontrol edin.
-                      </p>
-                    )}
                   </div>
                 </div>
               )}
@@ -251,15 +244,15 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? '🔮 Prokerala Gerçek Astroloji + AI Analiz Hazırlanıyor...' : '🌌 Gerçek Astroloji Rehberimi Al'}
+                    {isLoading ? '🔮 Aztro Ücretsiz Astroloji + AI Analiz Hazırlanıyor...' : '🌌 Ücretsiz Astroloji Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
             </CardContent>
           </Card>
 
-          {/* Prokerala Data Display */}
-          {prokeralaData && (
+          {/* Aztro Data Display */}
+          {aztroData && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -269,26 +262,30 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-semibold text-purple-200 mb-4 text-center">
-                    🔮 Prokerala Gerçek Astroloji Verilerin
+                    🔮 Aztro Ücretsiz Astroloji Verilerin
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
                     <div className="p-4 bg-slate-700/30 rounded-lg">
                       <h4 className="text-yellow-300 font-medium mb-2">☀️ Güneş Burcu</h4>
-                      <p className="text-white">{prokeralaData.sunSign}</p>
+                      <p className="text-white">{aztroData.sunSign}</p>
                     </div>
                     <div className="p-4 bg-slate-700/30 rounded-lg">
-                      <h4 className="text-blue-300 font-medium mb-2">🌙 Ay Burcu</h4>
-                      <p className="text-white">{prokeralaData.moonSign}</p>
+                      <h4 className="text-green-300 font-medium mb-2">🍀 Şanslı Sayı</h4>
+                      <p className="text-white">{aztroData.luckyNumber}</p>
                     </div>
                     <div className="p-4 bg-slate-700/30 rounded-lg">
-                      <h4 className="text-green-300 font-medium mb-2">⬆️ Yükselen</h4>
-                      <p className="text-white">{prokeralaData.risingSign}</p>
+                      <h4 className="text-pink-300 font-medium mb-2">🎨 Şanslı Renk</h4>
+                      <p className="text-white">{aztroData.luckyColor}</p>
+                    </div>
+                    <div className="p-4 bg-slate-700/30 rounded-lg">
+                      <h4 className="text-blue-300 font-medium mb-2">😊 Ruh Hali</h4>
+                      <p className="text-white">{aztroData.mood}</p>
                     </div>
                   </div>
                   <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
-                    <h5 className="text-purple-200 font-medium mb-2">✨ Prokerala API Verified</h5>
+                    <h5 className="text-purple-200 font-medium mb-2">✨ Aztro API Verified</h5>
                     <p className="text-gray-300 text-sm">
-                      Bu veriler Prokerala API'den alınan gerçek astroloji hesaplamalarıdır.
+                      Bu veriler ücretsiz Aztro API'den alınan günlük astroloji bilgileridir.
                     </p>
                   </div>
                 </CardContent>
@@ -307,10 +304,10 @@ Gerçek astroloji verilerine dayalı analizin tamamlandı. Evren seninle aynı f
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-semibold text-purple-200 mb-2">
-                      🔮 Prokerala Gerçek Astroloji Rehberin
+                      🔮 Aztro Ücretsiz Astroloji Rehberin
                     </h3>
                     <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
-                      <span className="text-green-300 text-sm">🤖 Mixtral-8x7b AI + 🔮 Prokerala Real Data</span>
+                      <span className="text-green-300 text-sm">🤖 AI Analiz + 🔮 Aztro Free API</span>
                     </div>
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">
