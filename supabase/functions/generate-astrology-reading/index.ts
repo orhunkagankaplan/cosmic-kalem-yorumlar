@@ -21,104 +21,99 @@ serve(async (req) => {
     const requestBody = await req.json();
     
     
-    // Handle direct Prokerala API requests
-    if (requestBody.prokeralaRequest) {
-      const { name, birthDate, birthTime, birthPlace } = requestBody.prokeralaRequest;
+    // Handle Aztro API requests
+    if (requestBody.aztroRequest) {
+      const { name, birthDate, birthTime, birthPlace } = requestBody.aztroRequest;
       
-      console.log('Processing direct Prokerala API request...');
+      console.log('Processing Aztro API request...');
 
       try {
-        // First, get the access token using client credentials flow
-        console.log('Getting Prokerala access token...');
+        // Get zodiac sign from birth date
+        const getZodiacSign = (birthDate: string): string => {
+          const [year, month, day] = birthDate.split('-').map(Number);
+          const monthDay = month * 100 + day;
+          
+          if (monthDay >= 321 && monthDay <= 419) return 'aries';
+          if (monthDay >= 420 && monthDay <= 520) return 'taurus';
+          if (monthDay >= 521 && monthDay <= 620) return 'gemini';
+          if (monthDay >= 621 && monthDay <= 722) return 'cancer';
+          if (monthDay >= 723 && monthDay <= 822) return 'leo';
+          if (monthDay >= 823 && monthDay <= 922) return 'virgo';
+          if (monthDay >= 923 && monthDay <= 1022) return 'libra';
+          if (monthDay >= 1023 && monthDay <= 1121) return 'scorpio';
+          if (monthDay >= 1122 && monthDay <= 1221) return 'sagittarius';
+          if (monthDay >= 1222 || monthDay <= 119) return 'capricorn';
+          if (monthDay >= 120 && monthDay <= 218) return 'aquarius';
+          if (monthDay >= 219 && monthDay <= 320) return 'pisces';
+          
+          return 'aries'; // fallback
+        };
+
+        const translateZodiacToTurkish = (sign: string): string => {
+          const translations: { [key: string]: string } = {
+            'aries': 'Koç',
+            'taurus': 'Boğa', 
+            'gemini': 'İkizler',
+            'cancer': 'Yengeç',
+            'leo': 'Aslan',
+            'virgo': 'Başak',
+            'libra': 'Terazi',
+            'scorpio': 'Akrep',
+            'sagittarius': 'Yay',
+            'capricorn': 'Oğlak',
+            'aquarius': 'Kova',
+            'pisces': 'Balık'
+          };
+          return translations[sign] || sign;
+        };
+
+        const zodiacSign = getZodiacSign(birthDate);
         
-        const tokenResponse = await fetch('https://api.prokerala.com/oauth/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: new URLSearchParams({
-            'grant_type': 'client_credentials',
-            'client_id': prokeralaClientId,
-            'client_secret': prokeralaSecret
-          })
+        console.log(`Calling Aztro API for ${zodiacSign} sign...`);
+
+        // Call Aztro API
+        const aztroResponse = await fetch(`https://aztro.sameerkumar.website/?sign=${zodiacSign}&day=today`, {
+          method: 'POST'
         });
 
-        if (!tokenResponse.ok) {
-          const tokenError = await tokenResponse.text();
-          console.error('Token request failed:', tokenError);
-          throw new Error(`Token request failed: ${tokenResponse.status} - ${tokenError}`);
+        console.log('Aztro API response status:', aztroResponse.status);
+
+        if (!aztroResponse.ok) {
+          const errorText = await aztroResponse.text();
+          console.error('Aztro API error response:', errorText);
+          throw new Error(`Aztro API hatası: ${aztroResponse.status} - ${errorText}`);
         }
 
-        const tokenData = await tokenResponse.json();
-        const accessToken = tokenData.access_token;
-        
-        if (!accessToken) {
-          throw new Error('No access token received from Prokerala');
-        }
-
-        console.log('Access token received successfully');
-
-        // Convert birth data to required format
-        const [year, month, day] = birthDate.split('-');
-        const [hours, minutes] = birthTime.split(':');
-        
-        // Build query parameters for GET request
-        const queryParams = new URLSearchParams({
-          ayanamsa: '1',
-          coordinates: `${41.0082},${28.9784}`, // Istanbul coordinates as default
-          datetime: `${year}-${month}-${day}T${hours}:${minutes}:00+03:00`,
-          name: name.trim()
-        });
-
-        console.log('Calling Prokerala API with access token...');
-
-        // Basic astro details API call with Bearer token
-        const prokeralaResponse = await fetch(`https://api.prokerala.com/v2/astrology/birth-details?${queryParams.toString()}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-
-        console.log('Prokerala API response status:', prokeralaResponse.status);
-
-        if (!prokeralaResponse.ok) {
-          const errorText = await prokeralaResponse.text();
-          console.error('Prokerala API error response:', errorText);
-          throw new Error(`Prokerala API hatası: ${prokeralaResponse.status} - ${errorText}`);
-        }
-
-        const prokeralaData = await prokeralaResponse.json();
-        console.log('Prokerala data received:', prokeralaData);
+        const aztroData = await aztroResponse.json();
+        console.log('Aztro data received:', aztroData);
 
         // Check if response has data
-        if (!prokeralaData.data) {
-          console.error('Prokerala API response missing data field');
-          throw new Error('Prokerala API\'den geçersiz yanıt alındı');
+        if (!aztroData) {
+          console.error('Aztro API response is empty');
+          throw new Error('Aztro API\'den geçersiz yanıt alındı');
         }
 
-        // Extract and format astrology information
-        const data = prokeralaData.data;
-        
+        // Format Aztro data
         const formattedData = {
-          sunSign: data.sun_sign || 'Bilinmiyor',
-          moonSign: data.moon_sign || 'Bilinmiyor', 
-          risingSign: data.ascendant || 'Bilinmiyor',
-          planetaryPositions: data.planets || {},
-          nakshatraDetails: data.nakshatra || {},
-          basicAstroDetails: data
+          sunSign: translateZodiacToTurkish(zodiacSign),
+          horoscope: aztroData.description || 'Bugün için burç yorumunuz hazırlanamadı.',
+          luckyNumber: aztroData.lucky_number?.toString() || 'Bilinmiyor',
+          luckyColor: aztroData.color || 'Bilinmiyor',
+          mood: aztroData.mood || 'Olumlu',
+          compatibility: aztroData.compatibility || 'Tüm burçlarla uyumlu',
+          date_range: aztroData.date_range || ''
         };
 
         return new Response(JSON.stringify({ 
           success: true,
-          prokeralaData: formattedData,
+          aztroData: formattedData,
           timestamp: new Date().toISOString()
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
 
       } catch (error) {
-        console.error('Prokerala API request failed:', error);
+        console.error('Aztro API request failed:', error);
         throw error;
       }
     }

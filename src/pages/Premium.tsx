@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getAztroAstrologyData } from '@/utils/aztroService';
 import { translateAndAnalyzeAztroData } from '@/utils/aztroTranslationService';
+import { supabase } from '@/integrations/supabase/client';
 
 const Premium = () => {
   const [formData, setFormData] = useState({
@@ -31,21 +31,31 @@ const Premium = () => {
     setResult('');
     
     try {
-      console.log('Fetching Aztro astrology data...');
-      const aztroResult = await getAztroAstrologyData(
-        formData.ad,
-        formData.dogum_tarihi,
-        formData.saat,
-        formData.yer
-      );
+      console.log('Calling Supabase edge function for Aztro astrology data...');
       
-      if (aztroResult) {
-        console.log('Aztro data received:', aztroResult);
-        setAztroData(aztroResult);
+      const { data: aztroResult, error: supabaseError } = await supabase.functions.invoke('generate-astrology-reading', {
+        body: {
+          aztroRequest: {
+            name: formData.ad,
+            birthDate: formData.dogum_tarihi,
+            birthTime: formData.saat,
+            birthPlace: formData.yer
+          }
+        }
+      });
+      
+      if (supabaseError) {
+        console.error('Supabase function error:', supabaseError);
+        throw new Error('Supabase fonksiyonu çağrılırken hata oluştu: ' + supabaseError.message);
+      }
+      
+      if (aztroResult && aztroResult.success && aztroResult.aztroData) {
+        console.log('Aztro data received via edge function:', aztroResult.aztroData);
+        setAztroData(aztroResult.aztroData);
         
         console.log('Creating Turkish analysis...');
         const analysisResult = await translateAndAnalyzeAztroData(
-          aztroResult,
+          aztroResult.aztroData,
           {
             fullName: formData.ad,
             birthDate: formData.dogum_tarihi,
