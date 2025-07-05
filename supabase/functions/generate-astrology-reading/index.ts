@@ -103,6 +103,8 @@ serve(async (req) => {
           date_range: aztroData.date_range || ''
         };
 
+        console.log('Formatted Aztro data:', formattedData);
+
         return new Response(JSON.stringify({ 
           success: true,
           aztroData: formattedData,
@@ -129,6 +131,10 @@ serve(async (req) => {
       const { title, explanation } = requestBody.translateRequest;
       
       console.log('Processing translation request...');
+
+      if (!openRouterApiKey) {
+        throw new Error('OpenRouter API key not configured');
+      }
 
       const translationPrompt = `Lütfen aşağıdaki NASA metinlerini Türkçe'ye çevir. Bilimsel ve astronomik terimleri doğru şekilde çevir:
 
@@ -199,6 +205,10 @@ AÇIKLAMA: [Türkçe açıklama]`;
 
     if (!birthData || !birthData.fullName || !birthData.birthDate) {
       throw new Error('Birth data is incomplete');
+    }
+
+    if (!openRouterApiKey) {
+      throw new Error('OpenRouter API key not configured');
     }
 
     // Çok daha detaylı ve profesyonel astroloji analizi için gelişmiş prompt
@@ -272,8 +282,8 @@ Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel
   } catch (error) {
     console.error('Error in generate-astrology-reading function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false 
+      success: false,
+      error: error.message || 'Bilinmeyen bir hata oluştu'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

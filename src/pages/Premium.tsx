@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -44,9 +43,18 @@ const Premium = () => {
         }
       });
       
+      console.log('Supabase function response:', aztroResult);
+      console.log('Supabase function error:', supabaseError);
+      
       if (supabaseError) {
         console.error('Supabase function error:', supabaseError);
-        throw new Error('Supabase fonksiyonu çağrılırken hata oluştu: ' + supabaseError.message);
+        throw new Error('Astroloji servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.');
+      }
+      
+      // Check if the response indicates an error
+      if (aztroResult && !aztroResult.success) {
+        console.error('Edge function returned error:', aztroResult.error);
+        throw new Error(aztroResult.error || 'Astroloji verileri alınamadı.');
       }
       
       if (aztroResult && aztroResult.success && aztroResult.aztroData) {
@@ -75,11 +83,12 @@ Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yo
 
         setResult(enhancedReading);
       } else {
-        setError('Astroloji verisi alınamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
+        console.error('Invalid response from edge function:', aztroResult);
+        throw new Error('Astroloji verisi alınamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
       }
     } catch (error: any) {
       console.error('Error in Premium:', error);
-      const errorMessage = error.message || 'Bilinmeyen bir hata oluştu.';
+      const errorMessage = error.message || 'Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -135,7 +144,7 @@ Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yo
                 Ana Sayfa
               </Button>
             </Link>
-                  <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
               ⭐ Premium Aztro Ücretsiz Astroloji
             </h1>
           </div>
