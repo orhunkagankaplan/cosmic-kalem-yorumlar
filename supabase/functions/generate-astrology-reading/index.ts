@@ -18,7 +18,10 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Edge function called with method:', req.method);
     const requestBody = await req.json();
+    console.log('Request body received:', JSON.stringify(requestBody, null, 2));
+    
     
     
     // Handle Aztro API requests
