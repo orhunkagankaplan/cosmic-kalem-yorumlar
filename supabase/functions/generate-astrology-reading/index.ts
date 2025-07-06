@@ -144,14 +144,14 @@ AÇIKLAMA: [Türkçe açıklama]`;
     if (birthData.socialMedia && birthData.socialMedia.trim()) {
       socialMediaAnalysis = `\n\nSosyal Medya Paylaşımları: "${birthData.socialMedia}"
 
-Bu paylaşımları analiz et ve şu konulara göre yorumla:
-- Para/Maddi konular: Eğer para, maaş, borç, alışveriş vb. bahsediyorsa maddi durumu yorumla
-- Aşk/İlişkiler: Eğer sevgili, aşk, yalnızlık, ilişki vb. bahsediyorsa duygusal durumu yorumla  
-- Kariyer/İş: Eğer iş, çalışma, patron, stres vb. bahsediyorsa profesyonel durumu yorumla
-- Sağlık/Enerji: Eğer yorgunluk, hastalık, spor vb. bahsediyorsa fiziksel durumu yorumla
-- Aile/Arkadaş: Eğer aile, arkadaş, sosyal çevre bahsediyorsa sosyal durumu yorumla
+Bu paylaşımları analiz et ve şu konulara göre SPESIFIK yorumla:
+- Para/Maddi konular: Eğer para, maaş, borç, alışveriş, maddi zorluk vb. bahsediyorsa → maddi durumunu ve para konusundaki astrolojik rehberliğini detaylı yaz
+- Aşk/İlişkiler: Eğer sevgili, aşk, yalnızlık, ilişki, kalp kırıklığı vb. bahsediyorsa → duygusal durumunu ve aşk konusundaki astrolojik rehberliğini detaylı yaz  
+- Kariyer/İş: Eğer iş, çalışma, patron, stres, işsizlik, terfi vb. bahsediyorsa → profesyonel durumunu ve kariyer konusundaki astrolojik rehberliğini detaylı yaz
+- Sağlık/Enerji: Eğer yorgunluk, hastalık, spor, diyet vb. bahsediyorsa → fiziksel durumunu ve sağlık konusundaki astrolojik rehberliğini detaylı yaz
+- Aile/Arkadaş: Eğer aile, arkadaş, sosyal çevre, kavga vb. bahsediyorsa → sosyal durumunu ve ilişkiler konusundaki astrolojik rehberliğini detaylı yaz
 
-Bu analizi kişinin burcu ve doğum verileriyle birleştir.`;
+ÖNEMLI: Bu analizi kişinin Batı astrolojisi burcunu ve doğum verilerini kullanarak yap. Genel değil, paylaşımın TAM İÇERİĞİNE göre özel yorumlar yap.`;
     }
 
     // Çok daha detaylı ve profesyonel astroloji analizi için gelişmiş prompt
@@ -162,24 +162,32 @@ Doğum Tarihi: ${birthData.birthDate}
 Doğum Saati: ${birthData.birthTime}
 Doğum Yeri: ${birthData.birthCity}, ${birthData.birthCountry}${socialMediaAnalysis}
 
+ÇOK ÖNEMLİ KURALLAR:
+1. SADECE BATI ASTROLOJİSİ kullan: Koç, Boğa, İkizler, Yengeç, Aslan, Başak, Terazi, Akrep, Yay, Oğlak, Kova, Balık
+2. ÇİN BURÇLARINA (Köpek, Ejderha, Fare, vb.) ASLA DEĞINME
+3. SADECE 12 BATI BURCU SİSTEMİ kullan
+4. Hayvan isimleri kullanma (sadece Batı burçları: Koç, Boğa, Aslan, Yengeç, Akrep hariç - bunlar Batı astrolojisinin parçası)
+
 ÖNEMLI: Çok detaylı, profesyonel ve kişisel bir analiz yap. En az 400 kelime olmalı.
 
 Lütfen şu formatta yanıt ver:
 
-**Güneş Burcu**: [Burç adı - doğum tarihinden hesapla]
-**Ay Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre]
-**Yükselen Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre]
+**Güneş Burcu**: [Burç adı - doğum tarihinden hesapla - SADECE BATI ASTROLOJİSİ]
+**Ay Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre - SADECE BATI ASTROLOJİSİ]  
+**Yükselen Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre - SADECE BATI ASTROLOJİSİ]
 
 **Bugünün Astrolojik Analizi**:
-[Çok uzun, detaylı ve kişisel günlük astroloji yorumu. Kişinin adını sık kullan, ${new Date().toLocaleDateString('tr-TR')} tarihini vurgula, gezegen hareketlerinden bahset, doğum yerinin enerjisini dahil et, doğum saatinin önemini belirt, bu haftaki özel öneriler ver, kişisel gelişim tavsiyeleri ekle, ilişkiler hakkında yorumlar yap, kariyer ve para konularında rehberlik ver. En az 400 kelime olmalı.]
+[Çok uzun, detaylı ve kişisel günlük astroloji yorumu. Kişinin adını sık kullan, ${new Date().toLocaleDateString('tr-TR')} tarihini vurgula, gezegen hareketlerinden bahset, doğum yerinin enerjisini dahil et, doğum saatinin önemini belirt, bu haftaki özel öneriler ver, kişisel gelişim tavsiyeleri ekle, ilişkiler hakkında yorumlar yap, kariyer ve para konularında rehberlik ver. En az 400 kelime olmalı. SADECE BATI ASTROLOJİSİ BURÇLARI KULLAN.]
 
 ${birthData.socialMedia ? `**Sosyal Medya Enerji Analizi**:
-[Paylaştığı içeriğe göre çok spesifik yorumlar yap. Para bahsetmişse maddi durumu, aşk bahsetmişse duygusal durumu, iş bahsetmişse kariyer durumunu yorumla. Genel değil, paylaşımın tam içeriğine göre özel yorumlar yap. Bu analizi astrolojik verilerle birleştir.]` : ''}
+[Paylaştığı içeriğe göre çok spesifik yorumlar yap. Para bahsetmişse maddi durumu, aşk bahsetmişse duygusal durumu, iş bahsetmişse kariyer durumunu yorumla. Genel değil, paylaşımın tam içeriğine göre özel yorumlar yap. Bu analizi SADECE BATI ASTROLOJİSİ burç verileriyle birleştir.]` : ''}
 
 **Evrenin Sana Mesajı**:
 [Çok ilham verici, kişisel ve akılda kalıcı bir mesaj - 2-3 cümle, kişinin adını kullan]
 
-Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel ama samimi ol. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu sürekli vurgula.`;
+Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel ama samimi ol. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu sürekli vurgula.
+
+TEKRAR HATIRLATMA: SADECE BATI ASTROLOJİSİ burçları kullan. Çin burçlarından bahsetme.`;
 
     console.log('Calling OpenRouter API for astrology reading...');
 
@@ -196,7 +204,7 @@ Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel
         messages: [
           {
             role: 'system',
-            content: 'Sen Türkiye\'nin en yetenekli ve ünlü astroloğusun. Analizlerin çok detaylı, kişisel, profesyonel ve doğru. Her zaman Türkçe yanıt verirsin ve çok samimi, sıcak bir dil kullanırsın. İnsanları adlarıyla çağırır, onlara özel hissettirirsin. Sosyal medya paylaşımlarını analiz ederken çok spesifik ve içeriğe uygun yorumlar yaparsın.'
+            content: 'Sen Türkiye\'nin en yetenekli ve ünlü astroloğusun. Analizlerin çok detaylı, kişisel, profesyonel ve doğru. Her zaman Türkçe yanıt verirsin ve çok samimi, sıcak bir dil kullanırsın. İnsanları adlarıyla çağırır, onlara özel hissettirirsin. SADECE BATI ASTROLOJİSİ kullanırsın: Koç, Boğa, İkizler, Yengeç, Aslan, Başak, Terazi, Akrep, Yay, Oğlak, Kova, Balık. Çin burçlarını (Köpek, Ejderha, Fare vb.) ASLA kullanmazsın. Sosyal medya paylaşımlarını analiz ederken çok spesifik ve içeriğe uygun yorumlar yaparsın.'
           },
           {
             role: 'user',
