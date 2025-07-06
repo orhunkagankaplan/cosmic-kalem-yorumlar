@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -102,7 +101,7 @@ const Premium = () => {
       
       console.log('Local astrology data generated:', localData);
       
-      // AI ile detaylı analiz yap
+      // AI ile detaylı analiz yap (sosyal medya verisi ile birlikte)
       console.log('Calling AI for detailed analysis...');
       
       const { data: aiResult, error: supabaseError } = await supabase.functions.invoke('generate-astrology-reading', {
@@ -112,7 +111,8 @@ const Premium = () => {
             birthDate: formData.dogum_tarihi,
             birthTime: formData.saat,
             birthCity: formData.yer,
-            birthCountry: 'Türkiye'
+            birthCountry: 'Türkiye',
+            socialMedia: formData.sosyal_medya // Sosyal medya verisini Mistral AI'a gönder
           }
         }
       });
@@ -133,16 +133,13 @@ const Premium = () => {
       if (aiResult && aiResult.success && aiResult.reading) {
         console.log('AI reading received:', aiResult.reading);
         
-        // Enhanced reading with local data and social media analysis
+        // Enhanced reading with AI analysis
         const enhancedReading = `🌟 ${formData.ad} için Özel AI Astroloji Rehberin:
 
 ${aiResult.reading}
 
-${formData.sosyal_medya ? `💬 Sosyal Medya Enerji Analizi:
-Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yoğun düşünce akışı ve derinlemesine introspeksiyon' : formData.sosyal_medya.includes('mutlu') || formData.sosyal_medya.includes('güzel') ? 'Pozitif ve iyimser bir ruh hali' : 'Sakin ve düşünceli bir dönem'}
-
-` : ''}⚡ AstroMind AI Premium Sonuç:
-Kendi astroloji motorumuz ve yapay zeka analizimiz ile hazırlanmış özel rehberin tamamlandı! ✨`;
+⚡ AstroMind AI Premium Sonuç:
+Mistral AI tarafından hazırlanmış özel rehberin tamamlandı! ✨`;
 
         setResult(enhancedReading);
       } else {
