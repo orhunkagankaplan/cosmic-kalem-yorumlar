@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { translateAndAnalyzeAztroData } from '@/utils/aztroTranslationService';
 import { supabase } from '@/integrations/supabase/client';
 
 const Premium = () => {
@@ -20,7 +20,71 @@ const Premium = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
-  const [aztroData, setAztroData] = useState<any>(null);
+  const [localAstroData, setLocalAstroData] = useState<any>(null);
+
+  // Kendi astroloji motorumuz
+  const generateLocalAstrologyData = (birthDate: string) => {
+    const [year, month, day] = birthDate.split('-').map(Number);
+    const monthDay = month * 100 + day;
+    
+    let zodiacSign = '';
+    let zodiacSignTurkish = '';
+    
+    if (monthDay >= 321 && monthDay <= 419) {
+      zodiacSign = 'aries';
+      zodiacSignTurkish = 'Koç';
+    } else if (monthDay >= 420 && monthDay <= 520) {
+      zodiacSign = 'taurus'; 
+      zodiacSignTurkish = 'Boğa';
+    } else if (monthDay >= 521 && monthDay <= 620) {
+      zodiacSign = 'gemini';
+      zodiacSignTurkish = 'İkizler';
+    } else if (monthDay >= 621 && monthDay <= 722) {
+      zodiacSign = 'cancer';
+      zodiacSignTurkish = 'Yengeç';
+    } else if (monthDay >= 723 && monthDay <= 822) {
+      zodiacSign = 'leo';
+      zodiacSignTurkish = 'Aslan';
+    } else if (monthDay >= 823 && monthDay <= 922) {
+      zodiacSign = 'virgo';
+      zodiacSignTurkish = 'Başak';
+    } else if (monthDay >= 923 && monthDay <= 1022) {
+      zodiacSign = 'libra';
+      zodiacSignTurkish = 'Terazi';
+    } else if (monthDay >= 1023 && monthDay <= 1121) {
+      zodiacSign = 'scorpio';
+      zodiacSignTurkish = 'Akrep';
+    } else if (monthDay >= 1122 && monthDay <= 1221) {
+      zodiacSign = 'sagittarius';
+      zodiacSignTurkish = 'Yay';
+    } else if (monthDay >= 1222 || monthDay <= 119) {
+      zodiacSign = 'capricorn';
+      zodiacSignTurkish = 'Oğlak';
+    } else if (monthDay >= 120 && monthDay <= 218) {
+      zodiacSign = 'aquarius';
+      zodiacSignTurkish = 'Kova';
+    } else if (monthDay >= 219 && monthDay <= 320) {
+      zodiacSign = 'pisces';
+      zodiacSignTurkish = 'Balık';
+    }
+
+    // Günün sayısına göre şanslı sayı ve renk
+    const luckyNumbers = ['7', '13', '21', '33', '42', '55', '66', '77', '88', '99'];
+    const luckyColors = ['Altın', 'Gümüş', 'Mavi', 'Yeşil', 'Kırmızı', 'Mor', 'Turuncu', 'Pembe'];
+    const moods = ['Enerjik', 'Sakin', 'Yaratıcı', 'Odaklı', 'İlham Verici', 'Cesur', 'Romantik', 'Kararlı'];
+    
+    const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    
+    return {
+      sunSign: zodiacSignTurkish,
+      horoscope: `${zodiacSignTurkish} burcu için bugün harika bir gün! Pozitif enerji seni sararken, yeni fırsatlar kapında bekliyor.`,
+      luckyNumber: luckyNumbers[dayOfYear % luckyNumbers.length],
+      luckyColor: luckyColors[dayOfYear % luckyColors.length],
+      mood: moods[dayOfYear % moods.length],
+      compatibility: zodiacSignTurkish === 'Koç' ? 'Aslan, Yay' : zodiacSignTurkish === 'Boğa' ? 'Başak, Oğlak' : 'Tüm burçlarla uyumlu',
+      date_range: ''
+    };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,61 +94,60 @@ const Premium = () => {
     setResult('');
     
     try {
-      console.log('Calling Supabase edge function for Aztro astrology data...');
+      console.log('Generating local astrology data...');
       
-      const { data: aztroResult, error: supabaseError } = await supabase.functions.invoke('generate-astrology-reading', {
+      // Kendi astroloji verilerimizi oluştur
+      const localData = generateLocalAstrologyData(formData.dogum_tarihi);
+      setLocalAstroData(localData);
+      
+      console.log('Local astrology data generated:', localData);
+      
+      // AI ile detaylı analiz yap
+      console.log('Calling AI for detailed analysis...');
+      
+      const { data: aiResult, error: supabaseError } = await supabase.functions.invoke('generate-astrology-reading', {
         body: {
-          aztroRequest: {
-            name: formData.ad,
+          birthData: {
+            fullName: formData.ad,
             birthDate: formData.dogum_tarihi,
             birthTime: formData.saat,
-            birthPlace: formData.yer
+            birthCity: formData.yer,
+            birthCountry: 'Türkiye'
           }
         }
       });
       
-      console.log('Supabase function response:', aztroResult);
-      console.log('Supabase function error:', supabaseError);
+      console.log('Supabase AI function response:', aiResult);
+      console.log('Supabase AI function error:', supabaseError);
       
       if (supabaseError) {
-        console.error('Supabase function error:', supabaseError);
-        throw new Error('Astroloji servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.');
+        console.error('Supabase AI function error:', supabaseError);
+        throw new Error('AI analiz servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.');
       }
       
-      // Check if the response indicates an error
-      if (aztroResult && !aztroResult.success) {
-        console.error('Edge function returned error:', aztroResult.error);
-        throw new Error(aztroResult.error || 'Astroloji verileri alınamadı.');
+      if (aiResult && !aiResult.success) {
+        console.error('AI function returned error:', aiResult.error);
+        throw new Error(aiResult.error || 'AI analiz yapılamadı.');
       }
       
-      if (aztroResult && aztroResult.success && aztroResult.aztroData) {
-        console.log('Aztro data received via edge function:', aztroResult.aztroData);
-        setAztroData(aztroResult.aztroData);
+      if (aiResult && aiResult.success && aiResult.reading) {
+        console.log('AI reading received:', aiResult.reading);
         
-        console.log('Creating Turkish analysis...');
-        const analysisResult = await translateAndAnalyzeAztroData(
-          aztroResult.aztroData,
-          {
-            fullName: formData.ad,
-            birthDate: formData.dogum_tarihi,
-            birthTime: formData.saat,
-            birthCity: formData.yer
-          }
-        );
-        
-        // Enhanced reading with social media analysis if provided
-        const enhancedReading = `${analysisResult}
+        // Enhanced reading with local data and social media analysis
+        const enhancedReading = `🌟 ${formData.ad} için Özel AI Astroloji Rehberin:
+
+${aiResult.reading}
 
 ${formData.sosyal_medya ? `💬 Sosyal Medya Enerji Analizi:
 Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yoğun düşünce akışı ve derinlemesine introspeksiyon' : formData.sosyal_medya.includes('mutlu') || formData.sosyal_medya.includes('güzel') ? 'Pozitif ve iyimser bir ruh hali' : 'Sakin ve düşünceli bir dönem'}
 
-` : ''}🌟 Aztro API Kozmik Sonuç:
-Ücretsiz ve güvenilir astroloji verilerine dayalı analizin tamamlandı! ✨`;
+` : ''}⚡ AstroMind AI Premium Sonuç:
+Kendi astroloji motorumuz ve yapay zeka analizimiz ile hazırlanmış özel rehberin tamamlandı! ✨`;
 
         setResult(enhancedReading);
       } else {
-        console.error('Invalid response from edge function:', aztroResult);
-        throw new Error('Astroloji verisi alınamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
+        console.error('Invalid AI response:', aiResult);
+        throw new Error('AI analiz verisi alınamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
       }
     } catch (error: any) {
       console.error('Error in Premium:', error);
@@ -145,7 +208,7 @@ Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yo
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-purple-300 to-blue-300">
-              ⭐ Premium Aztro Ücretsiz Astroloji
+              ⭐ Premium AI Astroloji Rehberi
             </h1>
           </div>
 
@@ -153,13 +216,13 @@ Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yo
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-semibold text-purple-200 mb-2">
-                  🔮 Aztro Ücretsiz Astroloji + AI Yorumlama
+                  🔮 AstroMind AI Premium Analiz
                 </h2>
                 <p className="text-gray-400">
-                  Ücretsiz astroloji verilerini AI ile yorumlayarak kişisel rehberin
+                  Kendi astroloji motorumuz + AI ile kişisel rehberin
                 </p>
                 <div className="mt-2 px-3 py-1 bg-purple-600/20 border border-purple-500/30 rounded-full inline-block">
-                  <span className="text-purple-300 text-sm">🤖 AI Analiz + 🔮 Aztro API</span>
+                  <span className="text-purple-300 text-sm">🤖 AI Analiz + 🌟 AstroMind Engine</span>
                 </div>
               </div>
 
@@ -263,15 +326,15 @@ Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yo
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-3 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? '🔮 Aztro Ücretsiz Astroloji + AI Analiz Hazırlanıyor...' : '🌌 Ücretsiz Astroloji Rehberimi Al'}
+                    {isLoading ? '🔮 AI Premium Astroloji Analizi Hazırlanıyor...' : '🌌 Premium AI Astroloji Rehberimi Al'}
                   </Button>
                 </motion.div>
               </form>
             </CardContent>
           </Card>
 
-          {/* Aztro Data Display */}
-          {aztroData && (
+          {/* Local Astro Data Display */}
+          {localAstroData && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -281,30 +344,30 @@ Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yo
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/30 shadow-2xl">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-semibold text-purple-200 mb-4 text-center">
-                    🔮 Aztro Ücretsiz Astroloji Verilerin
+                    🔮 AstroMind Astroloji Verilerin
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
                     <div className="p-4 bg-slate-700/30 rounded-lg">
                       <h4 className="text-yellow-300 font-medium mb-2">☀️ Güneş Burcu</h4>
-                      <p className="text-white">{aztroData.sunSign}</p>
+                      <p className="text-white">{localAstroData.sunSign}</p>
                     </div>
                     <div className="p-4 bg-slate-700/30 rounded-lg">
                       <h4 className="text-green-300 font-medium mb-2">🍀 Şanslı Sayı</h4>
-                      <p className="text-white">{aztroData.luckyNumber}</p>
+                      <p className="text-white">{localAstroData.luckyNumber}</p>
                     </div>
                     <div className="p-4 bg-slate-700/30 rounded-lg">
                       <h4 className="text-pink-300 font-medium mb-2">🎨 Şanslı Renk</h4>
-                      <p className="text-white">{aztroData.luckyColor}</p>
+                      <p className="text-white">{localAstroData.luckyColor}</p>
                     </div>
                     <div className="p-4 bg-slate-700/30 rounded-lg">
                       <h4 className="text-blue-300 font-medium mb-2">😊 Ruh Hali</h4>
-                      <p className="text-white">{aztroData.mood}</p>
+                      <p className="text-white">{localAstroData.mood}</p>
                     </div>
                   </div>
                   <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
-                    <h5 className="text-purple-200 font-medium mb-2">✨ Aztro API Verified</h5>
+                    <h5 className="text-purple-200 font-medium mb-2">✨ AstroMind Engine</h5>
                     <p className="text-gray-300 text-sm">
-                      Bu veriler ücretsiz Aztro API'den alınan günlük astroloji bilgileridir.
+                      Bu veriler AstroMind'ın kendi astroloji motorundan üretilmiştir.
                     </p>
                   </div>
                 </CardContent>
@@ -323,10 +386,10 @@ Paylaşımlarından yansıyan enerji: ${formData.sosyal_medya.length > 100 ? 'Yo
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-semibold text-purple-200 mb-2">
-                      🔮 Aztro Ücretsiz Astroloji Rehberin
+                      🔮 Premium AI Astroloji Rehberin
                     </h3>
                     <div className="mt-2 px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full inline-block">
-                      <span className="text-green-300 text-sm">🤖 AI Analiz + 🔮 Aztro Free API</span>
+                      <span className="text-green-300 text-sm">🤖 AI Premium + 🌟 AstroMind Engine</span>
                     </div>
                   </div>
                   <div className="text-gray-200 leading-relaxed whitespace-pre-line">

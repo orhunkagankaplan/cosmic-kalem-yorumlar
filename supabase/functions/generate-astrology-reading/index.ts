@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -27,143 +28,9 @@ serve(async (req) => {
         success: false,
         error: 'Invalid JSON in request body'
       }), {
-        status: 400,
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    }
-    
-    // Handle Aztro API requests
-    if (requestBody.aztroRequest) {
-      const { name, birthDate, birthTime, birthPlace } = requestBody.aztroRequest;
-      
-      console.log('Processing Aztro API request with params:', { name, birthDate, birthTime, birthPlace });
-
-      // Validate required fields
-      if (!name || !birthDate) {
-        console.error('Missing required fields in aztroRequest');
-        return new Response(JSON.stringify({ 
-          success: false,
-          error: 'Ad ve doğum tarihi gerekli alanlar'
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      try {
-        // Get zodiac sign from birth date
-        const getZodiacSign = (birthDate: string): string => {
-          const [year, month, day] = birthDate.split('-').map(Number);
-          const monthDay = month * 100 + day;
-          
-          if (monthDay >= 321 && monthDay <= 419) return 'aries';
-          if (monthDay >= 420 && monthDay <= 520) return 'taurus';
-          if (monthDay >= 521 && monthDay <= 620) return 'gemini';
-          if (monthDay >= 621 && monthDay <= 722) return 'cancer';
-          if (monthDay >= 723 && monthDay <= 822) return 'leo';
-          if (monthDay >= 823 && monthDay <= 922) return 'virgo';
-          if (monthDay >= 923 && monthDay <= 1022) return 'libra';
-          if (monthDay >= 1023 && monthDay <= 1121) return 'scorpio';
-          if (monthDay >= 1122 && monthDay <= 1221) return 'sagittarius';
-          if (monthDay >= 1222 || monthDay <= 119) return 'capricorn';
-          if (monthDay >= 120 && monthDay <= 218) return 'aquarius';
-          if (monthDay >= 219 && monthDay <= 320) return 'pisces';
-          
-          return 'aries'; // fallback
-        };
-
-        const translateZodiacToTurkish = (sign: string): string => {
-          const translations: { [key: string]: string } = {
-            'aries': 'Koç',
-            'taurus': 'Boğa', 
-            'gemini': 'İkizler',
-            'cancer': 'Yengeç',
-            'leo': 'Aslan',
-            'virgo': 'Başak',
-            'libra': 'Terazi',
-            'scorpio': 'Akrep',
-            'sagittarius': 'Yay',
-            'capricorn': 'Oğlak',
-            'aquarius': 'Kova',
-            'pisces': 'Balık'
-          };
-          return translations[sign] || sign;
-        };
-
-        const zodiacSign = getZodiacSign(birthDate);
-        console.log(`Calculated zodiac sign: ${zodiacSign} for birth date: ${birthDate}`);
-        
-        console.log(`Calling Aztro API for ${zodiacSign} sign...`);
-
-        // Call Aztro API with timeout and better error handling
-        let aztroResponse;
-        try {
-          aztroResponse = await fetch(`https://aztro.sameerkumar.website/?sign=${zodiacSign}&day=today`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-        } catch (fetchError) {
-          console.error('Aztro API fetch failed:', fetchError);
-          throw new Error(`Aztro API bağlantı hatası: ${fetchError.message}`);
-        }
-
-        console.log('Aztro API response status:', aztroResponse.status);
-
-        if (!aztroResponse.ok) {
-          const errorText = await aztroResponse.text();
-          console.error('Aztro API error response:', errorText);
-          throw new Error(`Aztro API hatası: ${aztroResponse.status} - ${errorText}`);
-        }
-
-        let aztroData;
-        try {
-          aztroData = await aztroResponse.json();
-          console.log('Aztro data received:', aztroData);
-        } catch (jsonError) {
-          console.error('Failed to parse Aztro API response as JSON:', jsonError);
-          throw new Error('Aztro API geçersiz yanıt formatı');
-        }
-
-        // Check if response has data
-        if (!aztroData) {
-          console.error('Aztro API response is empty');
-          throw new Error('Aztro API\'den geçersiz yanıt alındı');
-        }
-
-        // Format Aztro data with fallbacks
-        const formattedData = {
-          sunSign: translateZodiacToTurkish(zodiacSign),
-          horoscope: aztroData.description || 'Bugün için burç yorumunuz hazırlanamadı.',
-          luckyNumber: aztroData.lucky_number?.toString() || Math.floor(Math.random() * 99 + 1).toString(),
-          luckyColor: aztroData.color || 'Altın',
-          mood: aztroData.mood || 'Olumlu',
-          compatibility: aztroData.compatibility || 'Tüm burçlarla uyumlu',
-          date_range: aztroData.date_range || ''
-        };
-
-        console.log('Formatted Aztro data:', formattedData);
-
-        return new Response(JSON.stringify({ 
-          success: true,
-          aztroData: formattedData,
-          timestamp: new Date().toISOString()
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-
-      } catch (error) {
-        console.error('Aztro API request failed:', error);
-        return new Response(JSON.stringify({ 
-          success: false,
-          error: `Aztro servisi hatası: ${error.message}`,
-          timestamp: new Date().toISOString()
-        }), {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
     }
 
     // Handle translation requests
@@ -245,7 +112,7 @@ AÇIKLAMA: [Türkçe açıklama]`;
       });
     }
 
-    // Handle astrology reading requests (existing functionality)
+    // Handle astrology reading requests (main functionality)
     const { birthData } = requestBody;
     
     console.log('Received birth data:', birthData);
@@ -296,6 +163,8 @@ Lütfen şu formatta yanıt ver:
 
 Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel ama samimi ol. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu sürekli vurgula.`;
 
+    console.log('Calling OpenRouter API for astrology reading...');
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -322,8 +191,8 @@ Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenRouter API Error:', errorData);
+      const errorData = await response.text();
+      console.error('OpenRouter API Error:', response.status, errorData);
       throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
