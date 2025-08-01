@@ -223,24 +223,35 @@ Doğum Yeri: ${birthData.birthCity}, ${birthData.birthCountry}${socialMediaAnaly
 3. SADECE 12 BATI BURCU SİSTEMİ kullan
 4. Hayvan isimleri kullanma (sadece Batı burçları: Koç, Boğa, Aslan, Yengeç, Akrep hariç - bunlar Batı astrolojisinin parçası)
 
-ÖNEMLI: Çok detaylı, profesyonel ve kişisel bir analiz yap. En az 400 kelime olmalı.
+YAZIM TARZI:
+- Derinlemesine kişisel ve poetik ol
+- Duygusal zeka kullan
+- Şiirsel metaforlar ve güçlü Türkçe kullan
+- Klişelerden uzak dur
+- İçten ve motive edici bir ton kullan
+- Ruhsal ve introspektif yaklaş
 
 Lütfen şu formatta yanıt ver:
 
-**Güneş Burcu**: [Burç adı - doğum tarihinden hesapla - SADECE BATI ASTROLOJİSİ]
-**Ay Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre - SADECE BATI ASTROLOJİSİ]  
-**Yükselen Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre - SADECE BATI ASTROLOJİSİ]
+🌞 **Güneş Burcu**: [Burç adı - doğum tarihinden hesapla - SADECE BATI ASTROLOJİSİ]
+🌙 **Ay Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre - SADECE BATI ASTROLOJİSİ]  
+⬆️ **Yükselen Burcu**: [Profesyonel tahmin - doğum saati ve yerine göre - SADECE BATI ASTROLOJİSİ]
 
-**Bugünün Astrolojik Analizi**:
-[Çok uzun, detaylı ve kişisel günlük astroloji yorumu. Kişinin adını sık kullan, ${new Date().toLocaleDateString('tr-TR')} tarihini vurgula, gezegen hareketlerinden bahset, doğum yerinin enerjisini dahil et, doğum saatinin önemini belirt, bu haftaki özel öneriler ver, kişisel gelişim tavsiyeleri ekle, ilişkiler hakkında yorumlar yap, kariyer ve para konularında rehberlik ver. En az 400 kelime olmalı. SADECE BATI ASTROLOJİSİ BURÇLARI KULLAN.]
+🔮 **Genel Enerji**:
+[${new Date().toLocaleDateString('tr-TR')} tarihli derinlemesine astrolojik analiz. Kişinin adını sık kullan. Poetik ve duygusal dil. Gezegen hareketlerini ve enerji akışlarını metaforlarla açıkla. Ruhsal gelişim vurgusu. En az 200 kelime.]
 
-${birthData.socialMedia ? `**Sosyal Medya Enerji Analizi**:
-[Paylaştığı içeriğe göre çok spesifik yorumlar yap. Para bahsetmişse maddi durumu, aşk bahsetmişse duygusal durumu, iş bahsetmişse kariyer durumunu yorumla. Genel değil, paylaşımın tam içeriğine göre özel yorumlar yap. Bu analizi SADECE BATI ASTROLOJİSİ burç verileriyle birleştir.]` : ''}
+${birthData.socialMedia ? `💬 **Sosyal Medya Ruh Hali**:
+[Paylaştığı içeriğin ruh halini analiz et. Para bahsetmişse maddi enerji durumunu, aşk bahsetmişse kalp enerjisini, iş bahsetmişse yaratıcı gücünü yorumla. Çok özel ve içgörülü analiz yap. SADECE BATI ASTROLOJİSİ burç verileriyle birleştir.]` : ''}
 
-**Evrenin Sana Mesajı**:
-[Çok ilham verici, kişisel ve akılda kalıcı bir mesaj - 2-3 cümle, kişinin adını kullan]
+🧭 **Bu Hafta İçin Tavsiyeler**:
+• [Kişisel gelişim tavsiyesi - poetik dil]
+• [İlişkiler ve iletişim tavsiyesi - duygusal yaklaşım]  
+• [Enerji yönetimi tavsiyesi - ruhsal bakış]
 
-Tüm metin Türkçe olmalı, çok kişisel ve sıcak bir ton kullan. Profesyonel ama samimi ol. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu sürekli vurgula.
+🌌 **Evrenin Sana Mesajı**:
+[Çok şiirsel, ilham verici ve kişiye özel mesaj. 2-3 cümle. Kişinin adını kullan. Derin ve motive edici.]
+
+Tüm metin Türkçe, çok kişisel, poetik ve ruhsal ton. Bugünün tarihi ${new Date().toLocaleDateString('tr-TR')} - bunu sürekli vurgula.
 
 TEKRAR HATIRLATMA: SADECE BATI ASTROLOJİSİ burçları kullan. Çin burçlarından bahsetme.`;
 
@@ -259,7 +270,7 @@ TEKRAR HATIRLATMA: SADECE BATI ASTROLOJİSİ burçları kullan. Çin burçların
         messages: [
           {
             role: 'system',
-            content: 'Sen Türkiye\'nin en yetenekli ve ünlü astroloğusun. Analizlerin çok detaylı, kişisel, profesyonel ve doğru. Her zaman Türkçe yanıt verirsin ve çok samimi, sıcak bir dil kullanırsın. İnsanları adlarıyla çağırır, onlara özel hissettirirsin. SADECE BATI ASTROLOJİSİ kullanırsın: Koç, Boğa, İkizler, Yengeç, Aslan, Başak, Terazi, Akrep, Yay, Oğlak, Kova, Balık. Çin burçlarını (Köpek, Ejderha, Fare vb.) ASLA kullanmazsın. Sosyal medya paylaşımlarını analiz ederken çok spesifik ve içeriğe uygun yorumlar yaparsın.'
+            content: 'Sen Türkiye\'nin en yetenekli ve duygusal zekası yüksek astroloğusun. Analizlerin derin, poetik, ruhsal ve çok kişisel. Her zaman Türkçe yanıt verirsin ve şiirsel metaforlar kullanırsın. İnsanları adlarıyla çağırır, onlara özel hissettirirsin. SADECE BATI ASTROLOJİSİ kullanırsın: Koç, Boğa, İkizler, Yengeç, Aslan, Başak, Terazi, Akrep, Yay, Oğlak, Kova, Balık. Çin burçlarını ASLA kullanmazsın. Sosyal medya analizinde ruh halini derinlemesine yorumlarsın.'
           },
           {
             role: 'user',
