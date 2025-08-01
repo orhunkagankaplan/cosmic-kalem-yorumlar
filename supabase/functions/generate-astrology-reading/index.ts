@@ -3,6 +3,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
+const freeAstrologyApiKey = Deno.env.get('FREEASTROLOGYAPI_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -128,15 +129,69 @@ AÇIKLAMA: [Türkçe açıklama]`;
       });
     }
 
-    if (!openRouterApiKey) {
-      console.error('OpenRouter API key not configured');
+    if (!openRouterApiKey || !freeAstrologyApiKey) {
+      console.error('API keys not configured - OpenRouter:', !!openRouterApiKey, 'FreeAstrology:', !!freeAstrologyApiKey);
       return new Response(JSON.stringify({ 
         success: false,
-        error: 'OpenRouter API key not configured'
+        error: 'API keys not configured'
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Doğum tarihinden burç hesapla
+    const getZodiacSign = (birthDate: string): string => {
+      const [year, month, day] = birthDate.split('-').map(Number);
+      const monthDay = month * 100 + day;
+      
+      if (monthDay >= 321 && monthDay <= 419) return 'aries';
+      if (monthDay >= 420 && monthDay <= 520) return 'taurus';
+      if (monthDay >= 521 && monthDay <= 620) return 'gemini';
+      if (monthDay >= 621 && monthDay <= 722) return 'cancer';
+      if (monthDay >= 723 && monthDay <= 822) return 'leo';
+      if (monthDay >= 823 && monthDay <= 922) return 'virgo';
+      if (monthDay >= 923 && monthDay <= 1022) return 'libra';
+      if (monthDay >= 1023 && monthDay <= 1121) return 'scorpio';
+      if (monthDay >= 1122 && monthDay <= 1221) return 'sagittarius';
+      if (monthDay >= 1222 || monthDay <= 119) return 'capricorn';
+      if (monthDay >= 120 && monthDay <= 218) return 'aquarius';
+      if (monthDay >= 219 && monthDay <= 320) return 'pisces';
+      
+      return 'aries'; // fallback
+    };
+
+    // Free Astrology API'den güncel astrolojik verileri al
+    let currentAstrologyData = '';
+    try {
+      const zodiacSign = getZodiacSign(birthData.birthDate);
+      console.log('Fetching current astrology data for sign:', zodiacSign);
+      
+      const astrologyResponse = await fetch(`https://api.freeastrologyapi.com/horoscope/daily/${zodiacSign}`, {
+        method: 'GET',
+        headers: {
+          'x-api-key': freeAstrologyApiKey,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (astrologyResponse.ok) {
+        const astrologyData = await astrologyResponse.json();
+        currentAstrologyData = `\n\nGÜNCEL ASTROLOJİK VERİLER (${new Date().toLocaleDateString('tr-TR')}):
+- Günlük Burç Yorumu: ${astrologyData.prediction || 'Güzel bir gün sizi bekliyor.'}
+- Şanslı Renk: ${astrologyData.color || 'Mavi'}
+- Şanslı Sayı: ${astrologyData.number || '7'}
+- Uyumlu Burç: ${astrologyData.compatibility || 'Tüm burçlar'}
+
+Bu güncel verileri analiz ederken kullan ve kişinin doğum verilerine göre yorumla.`;
+        
+        console.log('Successfully fetched current astrology data');
+      } else {
+        console.warn('Failed to fetch astrology data, using AI-only analysis');
+      }
+    } catch (astrologyError) {
+      console.warn('Error fetching astrology data:', astrologyError);
+      // API hatası olursa sadece AI analizi kullan
     }
 
     // Sosyal medya analizi için gelişmiş prompt
@@ -160,7 +215,7 @@ Bu paylaşımları analiz et ve şu konulara göre SPESIFIK yorumla:
 İsim: ${birthData.fullName}
 Doğum Tarihi: ${birthData.birthDate}
 Doğum Saati: ${birthData.birthTime}
-Doğum Yeri: ${birthData.birthCity}, ${birthData.birthCountry}${socialMediaAnalysis}
+Doğum Yeri: ${birthData.birthCity}, ${birthData.birthCountry}${socialMediaAnalysis}${currentAstrologyData}
 
 ÇOK ÖNEMLİ KURALLAR:
 1. SADECE BATI ASTROLOJİSİ kullan: Koç, Boğa, İkizler, Yengeç, Aslan, Başak, Terazi, Akrep, Yay, Oğlak, Kova, Balık
