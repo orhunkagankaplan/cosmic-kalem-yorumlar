@@ -40,11 +40,37 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
       return;
     }
     
-    // Validate date format
-    const date = new Date(formData.birthDate);
-    if (isNaN(date.getTime())) {
-      console.error('Invalid birth date:', formData.birthDate);
-      alert('Geçerli bir doğum tarihi girin');
+    // Strict DD/MM/YYYY format validation
+    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const match = formData.birthDate.match(dateRegex);
+    
+    if (!match) {
+      alert('Doğum tarihi GG/AA/YYYY formatında olmalıdır (örn: 15/03/1990)');
+      return;
+    }
+    
+    const [, day, month, year] = match;
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    
+    // Validate ranges
+    if (monthNum < 1 || monthNum > 12) {
+      alert('Ay 1-12 arasında olmalıdır');
+      return;
+    }
+    
+    if (dayNum < 1 || dayNum > 31) {
+      alert('Gün 1-31 arasında olmalıdır');
+      return;
+    }
+    
+    // Check actual date validity
+    const testDate = new Date(yearNum, monthNum - 1, dayNum);
+    if (testDate.getFullYear() !== yearNum || 
+        testDate.getMonth() !== monthNum - 1 || 
+        testDate.getDate() !== dayNum) {
+      alert('Geçersiz tarih - lütfen gerçek bir tarih girin');
       return;
     }
     
@@ -110,10 +136,11 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                 </Label>
                 <Input
                   id="birthDate"
-                  type="date"
+                  type="text"
                   value={formData.birthDate}
                   onChange={handleChange('birthDate')}
-                  className="bg-slate-700/50 border-purple-400/30 text-white focus:border-purple-400"
+                  placeholder="GG/AA/YYYY (örn: 15/03/1990)"
+                  className="bg-slate-700/50 border-purple-400/30 text-white placeholder-gray-400 focus:border-purple-400"
                   required
                   disabled={isSubmitting}
                 />

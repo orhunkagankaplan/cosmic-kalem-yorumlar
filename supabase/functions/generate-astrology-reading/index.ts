@@ -140,24 +140,45 @@ AÇIKLAMA: [Türkçe açıklama]`;
       });
     }
 
-    // Doğum tarihinden burç hesapla
+    // Doğum tarihinden burç hesapla - DD/MM/YYYY format
     const getZodiacSign = (birthDate: string): string => {
-      const [year, month, day] = birthDate.split('-').map(Number);
-      const monthDay = month * 100 + day;
+      console.log('Calculating zodiac sign for birth date:', birthDate);
       
-      if (monthDay >= 321 && monthDay <= 419) return 'aries';
-      if (monthDay >= 420 && monthDay <= 520) return 'taurus';
-      if (monthDay >= 521 && monthDay <= 620) return 'gemini';
-      if (monthDay >= 621 && monthDay <= 722) return 'cancer';
-      if (monthDay >= 723 && monthDay <= 822) return 'leo';
-      if (monthDay >= 823 && monthDay <= 922) return 'virgo';
-      if (monthDay >= 923 && monthDay <= 1022) return 'libra';
-      if (monthDay >= 1023 && monthDay <= 1121) return 'scorpio';
-      if (monthDay >= 1122 && monthDay <= 1221) return 'sagittarius';
-      if (monthDay >= 1222 || monthDay <= 119) return 'capricorn';
-      if (monthDay >= 120 && monthDay <= 218) return 'aquarius';
-      if (monthDay >= 219 && monthDay <= 320) return 'pisces';
+      // Parse DD/MM/YYYY format
+      const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+      const match = birthDate.match(dateRegex);
       
+      if (!match) {
+        console.error('Invalid date format, expected DD/MM/YYYY:', birthDate);
+        return 'aries'; // fallback
+      }
+      
+      const [, day, month, year] = match;
+      const dayNum = parseInt(day, 10);
+      const monthNum = parseInt(month, 10);
+      
+      console.log('Parsed date - Day:', dayNum, 'Month:', monthNum, 'Year:', year);
+      
+      // Use exact Western astrology dates (month * 100 + day format)
+      const monthDay = monthNum * 100 + dayNum;
+      
+      console.log('MonthDay value for zodiac calculation:', monthDay);
+      
+      // Exact Western astrology dates
+      if (monthDay >= 321 && monthDay <= 419) return 'aries';      // 21 Mart - 19 Nisan
+      if (monthDay >= 420 && monthDay <= 520) return 'taurus';     // 20 Nisan - 20 Mayıs
+      if (monthDay >= 521 && monthDay <= 620) return 'gemini';     // 21 Mayıs - 20 Haziran
+      if (monthDay >= 621 && monthDay <= 722) return 'cancer';     // 21 Haziran - 22 Temmuz
+      if (monthDay >= 723 && monthDay <= 822) return 'leo';        // 23 Temmuz - 22 Ağustos
+      if (monthDay >= 823 && monthDay <= 922) return 'virgo';      // 23 Ağustos - 22 Eylül
+      if (monthDay >= 923 && monthDay <= 1022) return 'libra';     // 23 Eylül - 22 Ekim
+      if (monthDay >= 1023 && monthDay <= 1121) return 'scorpio';  // 23 Ekim - 21 Kasım
+      if (monthDay >= 1122 && monthDay <= 1221) return 'sagittarius'; // 22 Kasım - 21 Aralık
+      if (monthDay >= 1222 || monthDay <= 119) return 'capricorn'; // 22 Aralık - 19 Ocak
+      if (monthDay >= 120 && monthDay <= 218) return 'aquarius';   // 20 Ocak - 18 Şubat
+      if (monthDay >= 219 && monthDay <= 320) return 'pisces';     // 19 Şubat - 20 Mart
+      
+      console.warn('Could not determine zodiac sign for monthDay:', monthDay);
       return 'aries'; // fallback
     };
 
